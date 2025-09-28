@@ -1,0 +1,67 @@
+#rh-palette-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3); /* Lighter backdrop */
+  z-index: 99999998;
+  display: flex;
+  justify-content: center;
+  /* Push the palette towards the top */
+  align-items: flex-start;
+  padding-top: 20vh;
+  font-family: monospace;
+}
+
+#rh-palette-container {
+  width: 700px;
+  /* Reduced opacity on the background to let the filter show through */
+  background-color: rgba(43, 43, 43, 0.8);
+  border-radius: 8px;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+  padding: 8px;
+  z-index: 99999999;
+  display: flex;
+  flex-direction: row;
+  backdrop-filter: blur(5px) brightness(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* The output area is completely hidden by default */
+#rh-palette-output {
+  display: none;
+  flex-grow: 1;
+  color: #e0e0e0;
+  font-size: 16px;
+  padding: 10px;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+  overflow-y: auto;
+  max-height: 50vh;
+  background-color: #212121;
+  border-radius: 4px;
+}
+
+#rh-palette-input {
+  width: 100%;
+  height: 40px;
+  background-color: #3c3c3c;
+  border: none;
+  outline: none;
+  color: #e0e0e0;
+  font-size: 20px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border-radius: 4px;
+}
+
+/* --- STATE CHANGE --- */
+/* When this class is added, the container becomes a column... */
+#rh-palette-container.is-showing-output {
+  flex-direction: column;
+}
+/* ...and the output area inside it becomes visible. */
+#rh-palette-container.is-showing-output #rh-palette-output {
+  display: block;
+}

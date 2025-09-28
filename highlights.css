@@ -1,0 +1,35 @@
+/* highlights.css - Solarized Dark Palette */
+
+/* Base style for all highlight spans */
+.rh-highlight-span {
+  border-radius: 0.1em;
+  padding: 0.1em 0.2em;
+  margin: 0 -2px; /* Prevents padding from shifting text */
+  backdrop-filter: invert(1);
+}
+
+/* Styles for capture groups using Solarized Dark accent colors.
+  g0 is the full match, g1 is the first capture group, etc. 
+*/
+
+.rh-highlight-g0 {
+  background-color: rgba(181, 137, 0, 0.6); /* Yellow */
+}
+.rh-highlight-g1 {
+  background-color: rgba(38, 139, 210, 0.6); /* Blue */
+}
+.rh-highlight-g2 {
+  background-color: rgba(133, 153, 0, 0.6); /* Green */
+}
+.rh-highlight-g3 {
+  background-color: rgba(203, 75, 22, 0.6); /* Orange */
+}
+.rh-highlight-g4 {
+  background-color: rgba(42, 161, 152, 0.6); /* Cyan */
+}
+.rh-highlight-g5 {
+  background-color: rgba(211, 54, 130, 0.6); /* Magenta */
+}
+.rh-highlight-g6 {
+  background-color: rgba(108, 113, 196, 0.6); /* Violet */
+}

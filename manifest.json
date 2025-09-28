@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "hed",
+  "version": "0.1",
+  "description": "Highlighting (and Javascript-ed) Ed.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "clipboardRead",
+    "clipboardWrite"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": { "default_icon": { "128": "media/hed.png" }},
+  "icons": { "128": "media/hed.png" },
+  "commands": {
+    "toggle-palette": {
+      "suggested_key": { "default": "Ctrl+H", "mac": "MacCtrl+H" },
+      "description": "Open the highlight command palette"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "palette.css",
+        "highlights.css"
+      ],
+      "matches": [ "<all_urls>" ]
+    }
+  ]
+}
