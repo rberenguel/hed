@@ -5,6 +5,8 @@ HED is a Chrome extension for users who prefer keyboard-driven, command-line tex
 1.  A modal, `ed`-like editor for editing text in any text field, `contenteditable` block, or your system clipboard.
 2.  An on-the-fly regex highlighter for instantly analyzing and marking up page content.
 
+https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
+
 ---
 
 ## Core Features
