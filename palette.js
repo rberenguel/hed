@@ -114,18 +114,29 @@
     input.autocomplete = "off";
 
     const processAndRender = async (command) => {
-      if (!edInstance.inputMode) {
-        if (
-          command.startsWith("/") &&
-          command.endsWith("H") &&
-          command.length > 2
-        ) {
-          const regexString = command.substring(1, command.length - 2);
-          window.regexHighlighter.remove(); // Make sure to remove previous highlights and observers
-          window.regexHighlighter.apply(regexString);
-          closePalette();
-          return;
-        }
+      const payload = {};
+      let shouldBroadcast = false;
+
+      if (
+        !edInstance.inputMode &&
+        command.startsWith("/") &&
+        command.endsWith("/H") &&
+        command.length > 2
+      ) {
+        payload.type = "highlight";
+        payload.regexString = command.substring(1, command.length - 2);
+        shouldBroadcast = true;
+      } else if (result.buffer) {
+        payload.type = "write";
+        payload.buffer = result.buffer;
+        payload.sessionMode = sessionMode;
+        shouldBroadcast = true;
+      }
+
+      if (shouldBroadcast) {
+        // Tell the background script to broadcast this action to all frames
+        chrome.runtime.sendMessage({ action: "broadcast-and-close", payload });
+        return; // Stop execution here, wait for the broadcast message
       }
 
       const result = edInstance.process(command);
@@ -189,12 +200,36 @@
     container.appendChild(input);
     backdrop.appendChild(container);
     document.body.appendChild(backdrop);
-    input.focus();
+    setTimeout(() => input.focus(), 0);
   }
 
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "toggle-palette") {
-      createPalette();
-    }
-  });
+  chrome.runtime.onMessage.addListener(
+    async (request, sender, sendResponse) => {
+      if (request.action === "toggle-palette" && document.hasFocus()) {
+        createPalette();
+      } else if (request.action === "execute-and-close") {
+        const { payload } = request;
+        if (payload.type === "highlight") {
+          window.regexHighlighter.remove();
+          window.regexHighlighter.apply(payload.regexString);
+        } else if (payload.type === "write") {
+          const newText = payload.buffer.join("\n");
+          // Only the focused element can be written to, so check for `document.hasFocus()`
+          // to avoid writing to multiple text fields across frames.
+          const focusedElement = document.activeElement;
+          if (document.hasFocus() && focusedElement) {
+            if (payload.sessionMode === "textfield-value") {
+              focusedElement.value = newText;
+            } else if (payload.sessionMode === "textfield-editable") {
+              setTextInEditable(focusedElement, payload.buffer);
+            } else {
+              // clipboard-edit
+              await navigator.clipboard.writeText(newText);
+            }
+          }
+        }
+        closePalette(); // All frames close their palette
+      }
+    },
+  );
 })();
