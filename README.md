@@ -7,6 +7,8 @@ HED is a Chrome extension for users who prefer keyboard-driven, command-line tex
 
 https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
 
+([View on youtube](https://youtu.be/x56SmT67LJw))
+
 ---
 
 ## Core Features
