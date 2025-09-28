@@ -1,13 +1,21 @@
 (() => {
-  const HIGHLIGHT_CLASS = 'rh-highlight-span';
+  const HIGHLIGHT_CLASS = "rh-highlight-span";
+  let lastRegexString = null;
+  let observer = null;
+  let debounceTimer = null;
 
   function createTextMap(rootElement) {
     const walker = document.createTreeWalker(rootElement, NodeFilter.SHOW_TEXT);
-    let fullText = '';
+    let fullText = "";
     const nodeMap = [];
     while (walker.nextNode()) {
       const node = walker.currentNode;
-      if (node.parentElement.closest('script, style, noscript, [class*="rh-palette"]')) continue;
+      if (
+        node.parentElement.closest(
+          'script, style, noscript, [class*="rh-palette"]',
+        )
+      )
+        continue;
       nodeMap.push({ node: node, start: fullText.length });
       fullText += node.nodeValue;
     }
@@ -30,10 +38,17 @@
   }
 
   function applyHighlights(regexString) {
+    lastRegexString = regexString; // Store the regex for re-application
+    if (!lastRegexString) return;
+
+    if (observer) observer.disconnect();
+
+    removeHighlights(false); // Remove old highlights without stopping the observer
+
     const rootElement = document.body;
     let regex;
     try {
-      regex = new RegExp(regexString, 'gd');
+      regex = new RegExp(lastRegexString, "gd");
     } catch (e) {
       console.error("Invalid Regex:", e);
       return;
@@ -45,41 +60,48 @@
     const matches = [...fullText.matchAll(regex)];
 
     for (const match of matches.reverse()) {
-      // --- FIX #2: MULTI-WORD HIGHLIGHTING ---
-      // Start loop from 1 to skip the full match (group 0)
-      // and only color the specific capture groups.
       for (let i = match.indices.length - 1; i > 0; i--) {
         const group = match.indices[i];
         if (!group) continue;
 
-        // --- FIX #1: RACE CONDITION ---
-        // Wrap each match in a try/catch to make it resilient.
         try {
           const [start, end] = group;
-          const { startNodeInfo, endNodeInfo } = findDomRange(nodeMap, start, end);
+          const { startNodeInfo, endNodeInfo } = findDomRange(
+            nodeMap,
+            start,
+            end,
+          );
 
-          // Check if nodes still exist and are connected to the DOM
-          if (startNodeInfo && endNodeInfo && startNodeInfo.node.isConnected && endNodeInfo.node.isConnected) {
+          if (
+            startNodeInfo &&
+            endNodeInfo &&
+            startNodeInfo.node.isConnected &&
+            endNodeInfo.node.isConnected
+          ) {
             const range = document.createRange();
             range.setStart(startNodeInfo.node, startNodeInfo.offset);
             range.setEnd(endNodeInfo.node, endNodeInfo.offset);
-            
-            const span = document.createElement('span');
+
+            const span = document.createElement("span");
             span.className = `${HIGHLIGHT_CLASS} rh-highlight-g${i}`;
-            
+
             const fragment = range.extractContents();
             span.appendChild(fragment);
             range.insertNode(span);
           }
         } catch (e) {
-          console.warn("Could not highlight a match, likely due to dynamic page content.", { match, error: e });
+          console.warn(
+            "Could not highlight a match, likely due to dynamic page content.",
+            { match, error: e },
+          );
         }
       }
     }
+    startObserver(); // Ensure the observer is running
   }
-  
-  function removeHighlights() {
-    document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach(span => {
+
+  function removeHighlights(stopObserving = true) {
+    document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach((span) => {
       const parent = span.parentNode;
       if (!parent) return;
       while (span.firstChild) {
@@ -88,7 +110,49 @@
       parent.removeChild(span);
       parent.normalize();
     });
+    if (stopObserving) {
+      lastRegexString = null;
+      stopObserver();
+    }
   }
 
-  window.regexHighlighter = { apply: applyHighlights, remove: removeHighlights };
+  function startObserver() {
+    if (observer) {
+      // If the observer already exists, just re-observe
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+      return;
+    }
+
+    observer = new MutationObserver(() => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        if (lastRegexString) {
+          applyHighlights(lastRegexString);
+        }
+      }, 500); // Debounce for 500ms
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+  }
+
+  function stopObserver() {
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+    }
+    clearTimeout(debounceTimer);
+  }
+
+  window.regexHighlighter = {
+    apply: applyHighlights,
+    remove: removeHighlights,
+  };
 })();

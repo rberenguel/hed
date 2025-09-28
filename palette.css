@@ -19,7 +19,7 @@
   /* Reduced opacity on the background to let the filter show through */
   background-color: rgba(43, 43, 43, 0.8);
   border-radius: 8px;
-  box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
   padding: 8px;
   z-index: 99999999;
   display: flex;

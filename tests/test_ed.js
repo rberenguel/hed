@@ -60,12 +60,7 @@ describe("Ed Class Core Functionality", function () {
       result = ed.process(".");
 
       expect(ed.inputMode).to.be.false;
-      expect(ed.buffer).to.deep.equal([
-        "one",
-        "inserted line",
-        "two",
-        "three",
-      ]);
+      expect(ed.buffer).to.deep.equal(["one", "inserted line", "two", "three"]);
       expect(ed.currentLine).to.equal(1);
     });
 
