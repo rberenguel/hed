@@ -109,23 +109,26 @@ class Ed {
     // In a real implementation, you would execute the shell command here.
     // For now, we'll just return a message indicating what would happen.
 
-    const output = `Would execute '${shellCommand}' on lines ${range.start}-${range.end}:\n${lines.join('\n')}`;
-    
+    const output = `Would execute '${shellCommand}' on lines ${range.start}-${range.end}:\n${lines.join("\n")}`;
+
     // As an example for a 'sort' command:
-    if (shellCommand === 'sort') {
+    if (shellCommand === "sort") {
       const sortedLines = [...lines].sort();
-      this.buffer.splice(range.start - 1, range.end - range.start + 1, ...sortedLines);
-      this.currentLine = range.start -1;
+      this.buffer.splice(
+        range.start - 1,
+        range.end - range.start + 1,
+        ...sortedLines,
+      );
+      this.currentLine = range.start - 1;
       return { output: `Lines sorted.` };
     }
-
 
     return {
       output,
     };
   }
 
-_parseCommand(commandStr) {
+  _parseCommand(commandStr) {
     let address = "";
     let command = "";
     let rest = "";
@@ -297,12 +300,14 @@ _parseCommand(commandStr) {
   }
 
   _parseAddress(addressStr) {
-    console.log(addressStr);
     if (!addressStr) {
       return { start: this.currentLine + 1, end: this.currentLine + 1 };
     }
     if (addressStr === "," || addressStr === "%") {
-      return { start: 1, end: this.buffer.length || 1 };
+      if (this.buffer.length === 0) {
+        return { start: 0, end: 0 };
+      }
+      return { start: 1, end: this.buffer.length };
     }
     if (addressStr.includes(",")) {
       let [s, e] = addressStr.split(",");

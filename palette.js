@@ -117,6 +117,11 @@
       const payload = {};
       let shouldBroadcast = false;
       const result = edInstance.process(command);
+      if (result.status === "input") {
+        input.placeholder = ""; // Clear placeholder to indicate text input is expected
+        renderOutput(output, null); // Clear any previous output
+        return;
+      }
       if (
         !edInstance.inputMode &&
         command.startsWith("/") &&
@@ -139,7 +144,6 @@
         return; // Stop execution here, wait for the broadcast message
       }
 
-      
       let newOutput = null;
 
       if (result.error) {
