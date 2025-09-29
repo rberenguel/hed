@@ -116,7 +116,7 @@
     const processAndRender = async (command) => {
       const payload = {};
       let shouldBroadcast = false;
-
+      const result = edInstance.process(command);
       if (
         !edInstance.inputMode &&
         command.startsWith("/") &&
@@ -139,7 +139,7 @@
         return; // Stop execution here, wait for the broadcast message
       }
 
-      const result = edInstance.process(command);
+      
       let newOutput = null;
 
       if (result.error) {

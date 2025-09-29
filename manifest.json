@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "hed",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Highlighting (and Javascript-ed) Ed.",
   "permissions": ["activeTab", "scripting", "clipboardRead", "clipboardWrite"],
   "background": {

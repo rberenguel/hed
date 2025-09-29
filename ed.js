@@ -51,6 +51,9 @@ class Ed {
     }
 
     switch (command[0]) {
+      case "!":
+        const shellCommand = command.substring(1).trim();
+        return this._shellCommand(shellCommand, range);
       case "a":
       case "i":
       case "c":
@@ -96,7 +99,33 @@ class Ed {
     }
   }
 
-  _parseCommand(commandStr) {
+  _shellCommand(shellCommand, range) {
+    if (!shellCommand) {
+      return this._error("no shell command specified");
+    }
+
+    const lines = this.buffer.slice(range.start - 1, range.end);
+
+    // In a real implementation, you would execute the shell command here.
+    // For now, we'll just return a message indicating what would happen.
+
+    const output = `Would execute '${shellCommand}' on lines ${range.start}-${range.end}:\n${lines.join('\n')}`;
+    
+    // As an example for a 'sort' command:
+    if (shellCommand === 'sort') {
+      const sortedLines = [...lines].sort();
+      this.buffer.splice(range.start - 1, range.end - range.start + 1, ...sortedLines);
+      this.currentLine = range.start -1;
+      return { output: `Lines sorted.` };
+    }
+
+
+    return {
+      output,
+    };
+  }
+
+_parseCommand(commandStr) {
     let address = "";
     let command = "";
     let rest = "";
@@ -111,8 +140,8 @@ class Ed {
         continue;
       }
 
-      // Change this line to accept any letter as a potential command
-      if (!inRegex && /[a-zA-Z]/.test(char)) {
+      // Change this line to accept '!' as a potential command
+      if (!inRegex && (/[a-zA-Z]/.test(char) || char === "!")) {
         cmdIndex = i;
         break;
       }
@@ -122,8 +151,8 @@ class Ed {
       address = commandStr.substring(0, cmdIndex);
       command = commandStr[cmdIndex];
       rest = commandStr.substring(cmdIndex + 1);
-      if (command === "s") {
-        command = "s" + rest;
+      if (command === "s" || command === "!") {
+        command += rest;
       }
     } else {
       address = commandStr;
