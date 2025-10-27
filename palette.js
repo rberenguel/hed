@@ -131,6 +131,22 @@
         payload.type = "highlight";
         payload.regexString = command.substring(1, command.length - 2);
         shouldBroadcast = true;
+      } else if (
+        !edInstance.inputMode &&
+        command.startsWith("/") &&
+        command.endsWith("/S") &&
+        command.length > 2
+      ) {
+        const regexString = command.substring(1, command.length - 2);
+        try {
+          const message = await window.regexSelector.selectAndCopy(regexString);
+          payload.type = "selection-complete";
+          payload.message = message;
+          shouldBroadcast = true;
+        } catch (error) {
+          renderOutput(output, error);
+          return; // Keep palette open to show the error
+        }
       } else if (result.buffer) {
         payload.type = "write";
         payload.buffer = result.buffer;
@@ -216,6 +232,15 @@
         if (payload.type === "highlight") {
           window.regexHighlighter.remove();
           window.regexHighlighter.apply(payload.regexString);
+          closePalette();
+        } else if (payload.type === "selection-complete") {
+          const output = document.getElementById("rh-palette-output");
+          if (output) {
+            renderOutput(output, payload.message);
+            setTimeout(closePalette, 1500); // Close after 1.5s
+          } else {
+            closePalette();
+          }
         } else if (payload.type === "write") {
           const newText = payload.buffer.join("\n");
           // Only the focused element can be written to, so check for `document.hasFocus()`
