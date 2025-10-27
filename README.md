@@ -15,14 +15,23 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
 
 - **Modal `ed` Interface**: Activate a minimalist, `ed`-like command palette with a simple shortcut (`Ctrl+H` by default). Use standard `ed` commands (`p`, `s/foo/bar/g`, `a`, `d`, etc.) to manipulate text.
 
-- **Dynamic Page Highlighter**: By entering a special command in the format `` `/your-regex/H` ``, you can instantly highlight all matches for a JavaScript regular expression across the entire page.
+- **Dynamic Page Highlighter**: Use the special command format `` `/your-regex/H` `` to instantly highlight all capture groups for a JavaScript regular expression across the page.
 
-  - **Capture Group Colors**: Each capture group in your regex is assigned a different color from a customizable theme (e.g., Solarized Dark), allowing for sophisticated text analysis. For example, `` `/(lorem)|(ipsum)/H` `` will highlight "lorem" and "ipsum" with unique styles.
-  - **Robust & Styled**: The highlighter works seamlessly across complex HTML elements (links, bold text, etc.) and uses high-contrast styling for reasonable readability on any website.
+  - **Live Preview**: See matches appear in real-time as you type your regex, making it easier to get your expression just right before executing.
+  - > **Heads up**: Be cautious with patterns that can match empty strings (like `(a*)` or `(.*)?`), as live previewing them can sometimes affect page performance.
+  - **Capture Group Colors**: Each capture group is assigned a different color, allowing for sophisticated text analysis. For example, `` `/(lorem)|(ipsum)/H` `` will highlight "lorem" and "ipsum" with unique styles.
+  - **Robust & Styled**: The highlighter works seamlessly across complex HTML elements and uses high-contrast styling for readability.
+
+- **Regex-based Selection**: With the `` `/your-regex/S` `` command, you can select and copy text from the page.
+
+  - **Capture Group Extraction**: It finds all matches for your regex and copies the content of the capture groups to your clipboard.
+  - **CSV Formatting**: The copied text is formatted as a CSV, with each match on a new row and each capture group as a column. This is perfect for extracting structured data from a page.
+  - **Live Preview**: Just like the highlighter, the selector shows you what will be matched as you type.
+  - > **Heads up**: Be cautious with patterns that can match empty strings (like `(a*)` or `(.*)?`), as live previewing them can sometimes affect page performance.
 
 - **Context-Aware Editing**: The editor is smart about where it gets its text from:
 
-  - **Text Fields**: If your cursor is in a `<textarea>`, `<input>`, or a `contenteditable` element, WebEd automatically loads its content into the buffer. The `w` command writes your changes directly back to the element.
+  - **Text Fields**: If your cursor is in a `<textarea>`, `<input>`, or a `contenteditable` element, HED automatically loads its content into the buffer. The `w` command writes your changes directly back to the element.
   - **Clipboard**: If you are not focused on an editable field, the editor loads its buffer from your system clipboard. The `w` command overwrites the clipboard with your edits.
 
 - **Keyboard-Centric Workflow**: Designed from the ground up to be operated entirely by the keyboard.
@@ -39,6 +48,6 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
 
 1.  Navigate to any web page.
 2.  Focus a text area or `contenteditable` block you want to edit, or just click anywhere to use your clipboard.
-3.  Press **`Ctrl+H`** to launch the WebEd palette.
-4.  Enter standard `ed` commands and press `Enter`.
+3.  Press **`Ctrl+H`** to launch the HED palette.
+4.  Enter standard `ed` commands, a highlight command (`/regex/H`), or a selection command (`/regex/S`).
 5.  When finished, type `w` and press `Enter` to save your changes and close the editor.
