@@ -196,7 +196,10 @@
     };
 
     backdrop.addEventListener("click", (e) => {
-      if (e.target === backdrop) closePalette();
+      if (e.target === backdrop) {
+        window.regexHighlighter.remove();
+        closePalette();
+      }
     });
     ["keydown", "keyup", "keypress"].forEach((evt) =>
       backdrop.addEventListener(evt, (e) => e.stopPropagation()),
@@ -204,6 +207,7 @@
 
     input.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
+        window.regexHighlighter.remove();
         closePalette();
         return;
       }
@@ -214,6 +218,28 @@
       input.value = "";
       // We no longer echo the command here; the output is handled entirely by processAndRender.
       processAndRender(command);
+    });
+
+    input.addEventListener("input", (e) => {
+      const command = e.target.value;
+      const isSelector = command.endsWith("/S");
+      const isHighlighter = command.endsWith("/H");
+
+      if (
+        command.startsWith("/") &&
+        (isSelector || isHighlighter) &&
+        command.length > 5 // / + 3 chars + /H or /S
+      ) {
+        const regexString = command.substring(1, command.length - 2);
+        clearTimeout(input.highlightTimeout);
+        input.highlightTimeout = setTimeout(
+          () => window.regexHighlighter.apply(regexString),
+          100,
+        );
+      } else {
+        clearTimeout(input.highlightTimeout);
+        window.regexHighlighter.remove();
+      }
     });
 
     container.appendChild(output);
