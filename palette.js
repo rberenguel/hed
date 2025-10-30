@@ -1,6 +1,8 @@
 (() => {
   const PALETTE_ID = "rh-palette-backdrop";
   let edInstance = null; // To hold our editor session
+  let sessionMode = "clipboard-edit"; // Default session mode
+  let activeElement = null; // Default active element
 
   /**
    * Reads text from a contenteditable element, preserving line breaks.
@@ -16,11 +18,7 @@
         block.append("\n");
       });
 
-    // --- FIX IS HERE ---
-    // Trim the final text content to remove leading/trailing whitespace and newlines
-    // from the HTML source formatting before splitting.
     const cleanText = clone.textContent.trim();
-
     return cleanText.split("\n");
   }
 
@@ -40,10 +38,6 @@
     document.getElementById(PALETTE_ID)?.remove();
   }
 
-  /**
-   * Renders text to the output screen, replacing previous content.
-   * If text is null/empty, it hides the output area.
-   */
   function renderOutput(outputElement, text) {
     const container = document.getElementById("rh-palette-container");
     if (!container) return;
@@ -53,10 +47,76 @@
       outputElement.textContent = text;
       outputElement.scrollTop = outputElement.scrollHeight;
     } else {
-      // If there's no output, hide the output area
       container.classList.remove("is-showing-output");
       outputElement.textContent = "";
     }
+  }
+
+  const getNoteKey = () => `hed-note:${window.location.href}`;
+
+  async function loadNoteBuffer() {
+    const key = getNoteKey();
+    try {
+      const data = await chrome.storage.local.get([key]);
+      if (data[key] && data[key].text) {
+        return data[key].text.split("\n");
+      }
+      return [""]; // Return empty buffer if no note
+    } catch (e) {
+      return ["Error loading note."];
+    }
+  }
+
+  async function saveNoteBuffer(buffer) {
+    const key = getNoteKey();
+    const text = buffer.join("\n").trim();
+
+    try {
+      // We must load existing data to preserve position/folded state
+      const data = await chrome.storage.local.get([key]);
+      const noteData = data[key] || {
+        position: { x: 20, y: 20 },
+        folded: false,
+      };
+      noteData.text = text;
+
+      // Save or remove from storage
+      if (text === "") {
+        await chrome.storage.local.remove(key);
+      } else {
+        await chrome.storage.local.set({ [key]: noteData });
+      }
+
+      // Tell the notes.js UI to update itself
+      if (window.hedNotes && window.hedNotes.createOrUpdateNote) {
+        window.hedNotes.createOrUpdateNote(text);
+      }
+
+      return text === ""
+        ? "Note deleted."
+        : `Note saved. ${buffer.length} lines.`;
+    } catch (e) {
+      console.error("HED Error saving note:", e);
+      return "Error saving note.";
+    }
+  }
+
+  async function _switchToNoteEditMode(inputElement, outputElement) {
+    sessionMode = "note-edit";
+    activeElement = null; // No active element, we're editing the note
+    const noteBuffer = await loadNoteBuffer();
+    edInstance = new Ed(noteBuffer, { verboseErrors: true });
+
+    const container = document.getElementById("rh-palette-container");
+    if (container) {
+      container.classList.add("is-editing-note");
+    }
+    const msg =
+      noteBuffer.join("").trim() === ""
+        ? "New note"
+        : `Note loaded (${noteBuffer.length} lines)`;
+    renderOutput(outputElement, msg);
+    inputElement.placeholder = edInstance.getPrompt();
   }
 
   async function createPalette() {
@@ -66,11 +126,18 @@
 
     const focusedElement = document.activeElement;
     let initialBuffer = [];
-    let sessionMode = "clipboard-edit";
-    let activeElement = null;
+    sessionMode = "clipboard-edit";
+    activeElement = null;
 
     if (focusedElement) {
       if (
+        focusedElement.matches &&
+        focusedElement.matches(".hed-note-content")
+      ) {
+        sessionMode = "note-edit";
+        activeElement = focusedElement;
+        initialBuffer = await loadNoteBuffer();
+      } else if (
         focusedElement.tagName === "TEXTAREA" ||
         focusedElement.tagName === "INPUT"
       ) {
@@ -82,7 +149,6 @@
         activeElement = focusedElement;
         initialBuffer = getTextFromEditable(focusedElement);
       } else {
-        // If not a recognized editable element, default to the clipboard
         sessionMode = "clipboard-edit";
         try {
           initialBuffer = (await navigator.clipboard.readText()).split("\n");
@@ -91,7 +157,6 @@
         }
       }
     } else {
-      // If nothing is focused, default to the clipboard
       sessionMode = "clipboard-edit";
       try {
         initialBuffer = (await navigator.clipboard.readText()).split("\n");
@@ -113,15 +178,38 @@
     input.placeholder = edInstance.getPrompt();
     input.autocomplete = "off";
 
+    if (sessionMode === "note-edit") {
+      container.classList.add("is-editing-note");
+      if (initialBuffer.join("").trim() !== "") {
+        renderOutput(output, `Note loaded (${initialBuffer.length} lines)`);
+      } else {
+        renderOutput(output, "New note");
+      }
+    }
+
     const processAndRender = async (command) => {
       const payload = {};
       let shouldBroadcast = false;
-      const result = edInstance.process(command);
-      if (result.status === "input") {
-        input.placeholder = ""; // Clear placeholder to indicate text input is expected
-        renderOutput(output, null); // Clear any previous output
+
+      if (!edInstance.inputMode && command.trim().toLowerCase() === "e") {
+        await _switchToNoteEditMode(input, output);
         return;
       }
+
+      const result = edInstance.process(command);
+
+      if (result.status === "input") {
+        input.placeholder = "";
+        renderOutput(output, null);
+        return;
+      }
+
+      if (result.status === "edit-file") {
+        // This is the 'e' command
+        await _switchToNoteEditMode(input, output);
+        return;
+      }
+
       if (
         !edInstance.inputMode &&
         command.startsWith("/") &&
@@ -145,19 +233,27 @@
           shouldBroadcast = true;
         } catch (error) {
           renderOutput(output, error);
-          return; // Keep palette open to show the error
+          return;
         }
-      } else if (result.buffer) {
-        payload.type = "write";
-        payload.buffer = result.buffer;
-        payload.sessionMode = sessionMode;
-        shouldBroadcast = true;
+      } else if (result.buffer && command.trim().toLowerCase() === "w") {
+        if (sessionMode === "note-edit") {
+          const saveMessage = await saveNoteBuffer(result.buffer);
+          renderOutput(output, saveMessage);
+          // Close immediately if deleted, otherwise after 1s
+          const closeDelay = saveMessage === "Note deleted." ? 500 : 1000;
+          setTimeout(closePalette, closeDelay);
+          return;
+        } else {
+          payload.type = "write";
+          payload.buffer = result.buffer;
+          payload.sessionMode = sessionMode;
+          shouldBroadcast = true;
+        }
       }
 
       if (shouldBroadcast) {
-        // Tell the background script to broadcast this action to all frames
         chrome.runtime.sendMessage({ action: "broadcast-and-close", payload });
-        return; // Stop execution here, wait for the broadcast message
+        return;
       }
 
       let newOutput = null;
@@ -168,7 +264,6 @@
         newOutput = result.output;
       }
 
-      // This single call now handles clearing, rendering, and hiding the output area.
       renderOutput(output, newOutput);
 
       if (result.status === "input") {
@@ -179,13 +274,13 @@
       }
 
       if (result.buffer) {
+        // This case should now only be hit by broadcast 'w' commands
         const newText = result.buffer.join("\n");
         if (sessionMode === "textfield-value") {
           activeElement.value = newText;
         } else if (sessionMode === "textfield-editable") {
           setTextInEditable(activeElement, result.buffer);
         } else {
-          // clipboard-edit
           await navigator.clipboard.writeText(newText);
         }
         closePalette();
@@ -216,7 +311,6 @@
       e.preventDefault();
       const command = input.value;
       input.value = "";
-      // We no longer echo the command here; the output is handled entirely by processAndRender.
       processAndRender(command);
     });
 
@@ -228,7 +322,7 @@
       if (
         command.startsWith("/") &&
         (isSelector || isHighlighter) &&
-        command.length > 5 // / + 3 chars + /H or /S
+        command.length > 5
       ) {
         const regexString = command.substring(1, command.length - 2);
         clearTimeout(input.highlightTimeout);
@@ -263,27 +357,29 @@
           const output = document.getElementById("rh-palette-output");
           if (output) {
             renderOutput(output, payload.message);
-            setTimeout(closePalette, 1500); // Close after 1.5s
+            setTimeout(closePalette, 1500);
           } else {
             closePalette();
           }
         } else if (payload.type === "write") {
           const newText = payload.buffer.join("\n");
-          // Only the focused element can be written to, so check for `document.hasFocus()`
-          // to avoid writing to multiple text fields across frames.
           const focusedElement = document.activeElement;
           if (document.hasFocus() && focusedElement) {
             if (payload.sessionMode === "textfield-value") {
               focusedElement.value = newText;
             } else if (payload.sessionMode === "textfield-editable") {
-              setTextInEditable(focusedElement, payload.buffer);
+              if (
+                !focusedElement.matches ||
+                !focusedElement.matches(".hed-note-content")
+              ) {
+                setTextInEditable(focusedElement, payload.buffer);
+              }
             } else {
-              // clipboard-edit
               await navigator.clipboard.writeText(newText);
             }
           }
         }
-        closePalette(); // All frames close their palette
+        closePalette();
       }
     },
   );

@@ -29,6 +29,23 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
   - **Live Preview**: Just like the highlighter, the selector shows you what will be matched as you type.
   - > **Heads up**: Be cautious with patterns that can match empty strings (like `(a*)` or `(.*)?`), as live previewing them can sometimes affect page performance.
 
+- **Per-Page Notes**: Create and edit a persistent, draggable "post-it" note for any page.
+  - **ed Integration**: Use the `e` command to load the current page's note into the `ed` buffer. All standard commands (`a`, `d`, `s/old/new/g`, etc.) can be used to edit it.
+  - **Saving**: When in note-edit mode, the `w` command saves the buffer back to the page's note. If the note is empty, `w` will delete the note and remove it from the page.
+  - **Markdown Titles**: The first line of the note is treated as a title. You can set its color using a simple syntax:
+
+```markdown
+# .b My Blue Note (blue)
+
+# .g My Green Note (green)
+
+# .r My Red Note (red)
+
+# .t My Translucent Note (translucent)
+
+# My Default Note (yellow)
+```
+
 - **Context-Aware Editing**: The editor is smart about where it gets its text from:
 
   - **Text Fields**: If your cursor is in a `<textarea>`, `<input>`, or a `contenteditable` element, HED automatically loads its content into the buffer. The `w` command writes your changes directly back to the element.

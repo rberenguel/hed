@@ -1,9 +1,15 @@
 {
   "manifest_version": 3,
   "name": "hed",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Highlighting (and Javascript-ed) Ed.",
-  "permissions": ["activeTab", "scripting", "clipboardRead", "clipboardWrite"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "clipboardRead",
+    "clipboardWrite",
+    "storage"
+  ],
   "background": {
     "service_worker": "background.js"
   },
@@ -18,15 +24,26 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["ed.js", "highlighter.js", "palette.js", "selector.js"],
-      "css": ["palette.css", "highlights.css"],
+      "js": [
+        "ed.js",
+        "highlighter.js",
+        "palette.js",
+        "selector.js",
+        "notes.js"
+      ],
+      "css": ["palette.css", "highlights.css", "notes.css", "fonts/monoid.css"],
       "run_at": "document_idle",
       "all_frames": true
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["palette.css", "highlights.css"],
+      "resources": [
+        "palette.css",
+        "highlights.css",
+        "notes.css",
+        "fonts/monoid.css"
+      ],
       "matches": ["<all_urls>"]
     }
   ]

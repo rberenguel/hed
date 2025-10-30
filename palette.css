@@ -28,6 +28,12 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* --- NEW: Visual cue for note editing --- */
+#rh-palette-container.is-editing-note {
+  border-color: #fff8b4;
+}
+/* --- END NEW --- */
+
 /* The output area is completely hidden by default */
 #rh-palette-output {
   display: none;

@@ -10,13 +10,17 @@ class Ed {
     this.lastError = null;
   }
 
+  // --- MODIFIED ---
   process(line) {
     if (this.inputMode) {
+      // Pass the raw line directly to _handleInputMode.
+      // Do not check for "." or trim here.
       return this._handleInputMode(line);
     } else {
       return this._processCommand(line);
     }
   }
+  // --- END MODIFIED ---
 
   getPrompt() {
     if (this.inputMode) {
@@ -73,6 +77,8 @@ class Ed {
           : { output: numPrintOutput };
       case "s":
         return this._substituteCommand(command, range);
+      case "e":
+        return { status: "edit-file" };
       case "q":
         return {
           output:
@@ -83,7 +89,7 @@ class Ed {
         this.currentLine = 0;
         return { output: "Simulator reset." };
       case "w":
-        return { output: "File saved (simulated).", buffer: this.buffer };
+        return { buffer: this.buffer };
       case "h":
         return { output: this._getHelpMessage() };
       case "H":
@@ -105,13 +111,8 @@ class Ed {
     }
 
     const lines = this.buffer.slice(range.start - 1, range.end);
-
-    // In a real implementation, you would execute the shell command here.
-    // For now, we'll just return a message indicating what would happen.
-
     const output = `Would execute '${shellCommand}' on lines ${range.start}-${range.end}:\n${lines.join("\n")}`;
 
-    // As an example for a 'sort' command:
     if (shellCommand === "sort") {
       const sortedLines = [...lines].sort();
       this.buffer.splice(
@@ -142,8 +143,6 @@ class Ed {
         inRegex = !inRegex;
         continue;
       }
-
-      // Change this line to accept '!' as a potential command
       if (!inRegex && (/[a-zA-Z]/.test(char) || char === "!")) {
         cmdIndex = i;
         break;
@@ -170,8 +169,10 @@ class Ed {
     return { address, command, rest };
   }
 
+  // --- MODIFIED ---
   _handleInputMode(line) {
-    if (line === ".") {
+    // Check the *trimmed* version of the line for the stop command.
+    if (line.trim() === ".") {
       this.inputMode = false;
       const { command, range } = this.lastCommandForInput;
 
@@ -185,10 +186,13 @@ class Ed {
       this.inputBuffer = [];
       return { output: "" };
     } else {
+      // If it's not the stop command, push the *original, raw* line.
+      // This correctly preserves empty lines or lines with leading/trailing spaces.
       this.inputBuffer.push(line);
       return { output: "", status: "input" };
     }
   }
+  // --- END MODIFIED ---
 
   _error(message) {
     this.lastError = message || "unknown command";
@@ -336,13 +340,11 @@ class Ed {
       const regexStr = addr.slice(1, -1);
       try {
         const regex = new RegExp(regexStr);
-        // Search forward from starting line
         for (let i = startingLine + 1; i < this.buffer.length; i++) {
           if (this.buffer[i].match(regex)) {
             return i + 1;
           }
         }
-        // If noWrap is false, wrap around and search from the beginning
         if (!noWrap) {
           for (let i = 0; i <= startingLine; i++) {
             if (this.buffer[i].match(regex)) {
@@ -350,7 +352,6 @@ class Ed {
             }
           }
         }
-        // If still no match, throw error
         throw new Error("no match");
       } catch (e) {
         if (e.message === "no match") throw e;
@@ -367,6 +368,7 @@ ed commands:
  i      - Insert text before current line
  c      - Change lines
  d      - Delete lines
+ e      - Edit page note (loads note into buffer)
  p      - Print lines
  n      - Number and print lines
  s/old/new/g - Substitute (g for global)
@@ -378,7 +380,7 @@ ed commands:
  1,$p   - Print all lines
  /regex/ - Search for regex (forward)
  H      - Toggle verbose error messages
- P      - Toggle prompt
+ P      -Toggle prompt
  reset  - Reset buffer (custom command)
 `;
   }

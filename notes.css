@@ -1,0 +1,170 @@
+#hed-postit-note {
+  position: fixed;
+  width: 250px;
+  min-height: 100px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: 99999990;
+  font-family:
+    "monoidregular", "Monoid", "Monoid regular", "Monoid Regular",
+    "Monoid Nerd Font", "Roboto", monospace !important;
+  color: #333;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#hed-postit-note.dragging {
+  cursor: grabbing;
+  opacity: 0.8;
+  user-select: none;
+}
+
+#hed-postit-note.folded {
+  min-height: 0;
+  height: 30px;
+}
+
+#hed-postit-note.folded .hed-note-content {
+  display: none;
+}
+
+/* REMOVED the following block which was hiding the controls:
+
+#hed-postit-note.folded .hed-note-controls {
+  display: none;
+}
+
+*/
+
+.hed-note-header {
+  height: 30px;
+  background: #fdf588;
+  border-bottom: 1px solid #e6db74;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: grab;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.hed-note-header span {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 5px;
+}
+
+.hed-note-controls {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.hed-note-header button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #888;
+  padding: 2px 5px;
+  border-radius: 3px;
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+
+.hed-note-header button:hover {
+  background: #e6db74;
+  color: #000;
+}
+
+.hed-note-content {
+  padding: 10px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  /*flex-grow: 1;*/
+  overflow-y: auto;
+  font-family:
+    "monoidregular", "Monoid", "Monoid regular", "Monoid Regular",
+    "Monoid Nerd Font", "Roboto", monospace !important;
+}
+
+.hed-note-content:focus {
+  outline: 2px solid #007bff;
+}
+
+/* ADD these classes to the end of notes.css */
+
+/* .y = yellow (default) */
+#hed-postit-note.hed-note-color-y {
+  background: #fff8b4;
+  border: 1px solid #ccc;
+}
+#hed-postit-note.hed-note-color-y .hed-note-header {
+  background: #fdf588;
+  border-bottom: 1px solid #e6db74;
+}
+#hed-postit-note.hed-note-color-y .hed-note-header button:hover {
+  background: #e6db74;
+}
+
+/* .b = blue */
+#hed-postit-note.hed-note-color-b {
+  background: #d4e8fd;
+  border: 1px solid #abc;
+}
+#hed-postit-note.hed-note-color-b .hed-note-header {
+  background: #c0d9f7;
+  border-bottom: 1px solid #a3c2e8;
+}
+#hed-postit-note.hed-note-color-b .hed-note-header button:hover {
+  background: #a3c2e8;
+}
+
+/* .g = green */
+#hed-postit-note.hed-note-color-g {
+  background: #d9f8d9;
+  border: 1px solid #adc;
+}
+#hed-postit-note.hed-note-color-g .hed-note-header {
+  background: #c3f0c3;
+  border-bottom: 1px solid #a8dba8;
+}
+#hed-postit-note.hed-note-color-g .hed-note-header button:hover {
+  background: #a8dba8;
+}
+
+/* .r = red */
+#hed-postit-note.hed-note-color-r {
+  background: #fdd4d4;
+  border: 1px solid #cba;
+}
+#hed-postit-note.hed-note-color-r .hed-note-header {
+  background: #f7c0c0;
+  border-bottom: 1px solid #e8a3a3;
+}
+#hed-postit-note.hed-note-color-r .hed-note-header button:hover {
+  background: #e8a3a3;
+}
+
+/* .t = translucent */
+#hed-postit-note.hed-note-color-t {
+  background: #99999922;
+  border: 1px solid rgba(200, 200, 200, 0.7);
+  backdrop-filter: blur(5px);
+  color: #b58900;
+}
+#hed-postit-note.hed-note-color-t .hed-note-header {
+  background: #99999922;
+  border-bottom: 1px solid rgba(200, 200, 200, 0.5);
+}
+#hed-postit-note.hed-note-color-t .hed-note-header button:hover {
+  background: #99999922;
+}
+#hed-postit-note.hed-note-color-t .hed-note-content {
+  color: #b58900;
+}
