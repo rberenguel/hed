@@ -14,22 +14,36 @@
 
 .rh-highlight-g0 {
   background-color: rgba(181, 137, 0, 0.6) !important; /* Yellow */
+  color: #fff;
+  text-shadow: 0 0 3px #000;
 }
 .rh-highlight-g1 {
   background-color: rgba(38, 139, 210, 0.6) !important; /* Blue */
+  color: #fff;
+  text-shadow: 0 0 3px #000;
 }
 .rh-highlight-g2 {
   background-color: rgba(133, 153, 0, 0.6) !important; /* Green */
+  color: #fff;
+  text-shadow: 0 0 3px #000;
 }
 .rh-highlight-g3 {
   background-color: rgba(203, 75, 22, 0.6) !important; /* Orange */
+  color: #fff;
+  text-shadow: 0 0 3px #000;
 }
 .rh-highlight-g4 {
   background-color: rgba(42, 161, 152, 0.6) !important; /* Cyan */
+  color: #fff;
+  text-shadow: 0 0 3px #000;
 }
 .rh-highlight-g5 {
   background-color: rgba(211, 54, 130, 0.6) !important; /* Magenta */
+  color: #fff;
+  text-shadow: 0 0 3px #000;
 }
 .rh-highlight-g6 {
   background-color: rgba(108, 113, 196, 0.6) !important; /* Violet */
+  color: #fff;
+  text-shadow: 0 0 3px #000;
 }
