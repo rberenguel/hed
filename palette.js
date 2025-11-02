@@ -52,10 +52,16 @@
     }
   }
 
-  const getNoteKey = () => `hed-note:${window.location.href}`;
+  const getNoteKey = async () => {
+    if (window.hedNoteKeyUtils && window.hedNoteKeyUtils.getNoteKey) {
+      return await window.hedNoteKeyUtils.getNoteKey();
+    }
+    // Fallback if utils not loaded yet
+    return `hed-note:${window.location.href}`;
+  };
 
   async function loadNoteBuffer() {
-    const key = getNoteKey();
+    const key = await getNoteKey();
     try {
       const data = await chrome.storage.local.get([key]);
       if (data[key] && data[key].text) {
@@ -68,17 +74,24 @@
   }
 
   async function saveNoteBuffer(buffer) {
-    const key = getNoteKey();
+    const key = await getNoteKey();
     const text = buffer.join("\n").trim();
 
     try {
-      // We must load existing data to preserve position/folded state
+      // We must load existing data to preserve position/folded state and dates
       const data = await chrome.storage.local.get([key]);
+      const now = Date.now();
       const noteData = data[key] || {
         position: { x: 20, y: 20 },
         folded: false,
+        createdAt: now,
       };
       noteData.text = text;
+      noteData.editedAt = now;
+      // Ensure createdAt exists for old notes
+      if (!noteData.createdAt) {
+        noteData.createdAt = now;
+      }
 
       // Save or remove from storage
       if (text === "") {
@@ -244,10 +257,17 @@
           setTimeout(closePalette, closeDelay);
           return;
         } else {
-          payload.type = "write";
-          payload.buffer = result.buffer;
-          payload.sessionMode = sessionMode;
-          shouldBroadcast = true;
+          // Write directly instead of broadcasting
+          const newText = result.buffer.join("\n");
+          if (sessionMode === "textfield-value") {
+            activeElement.value = newText;
+          } else if (sessionMode === "textfield-editable") {
+            setTextInEditable(activeElement, result.buffer);
+          } else {
+            await navigator.clipboard.writeText(newText);
+          }
+          closePalette();
+          return;
         }
       }
 
@@ -269,20 +289,6 @@
       if (result.status === "input") {
         input.placeholder = "";
       } else if (result.status === "quit") {
-        closePalette();
-        return;
-      }
-
-      if (result.buffer) {
-        // This case should now only be hit by broadcast 'w' commands
-        const newText = result.buffer.join("\n");
-        if (sessionMode === "textfield-value") {
-          activeElement.value = newText;
-        } else if (sessionMode === "textfield-editable") {
-          setTextInEditable(activeElement, result.buffer);
-        } else {
-          await navigator.clipboard.writeText(newText);
-        }
         closePalette();
         return;
       }
@@ -360,23 +366,6 @@
             setTimeout(closePalette, 1500);
           } else {
             closePalette();
-          }
-        } else if (payload.type === "write") {
-          const newText = payload.buffer.join("\n");
-          const focusedElement = document.activeElement;
-          if (document.hasFocus() && focusedElement) {
-            if (payload.sessionMode === "textfield-value") {
-              focusedElement.value = newText;
-            } else if (payload.sessionMode === "textfield-editable") {
-              if (
-                !focusedElement.matches ||
-                !focusedElement.matches(".hed-note-content")
-              ) {
-                setTextInEditable(focusedElement, payload.buffer);
-              }
-            } else {
-              await navigator.clipboard.writeText(newText);
-            }
           }
         }
         closePalette();

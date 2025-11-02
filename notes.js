@@ -14,7 +14,13 @@
   let dragOffsetY = 0;
 
   const NOTE_ID = "hed-postit-note";
-  const getNoteKey = () => `hed-note:${window.location.href}`;
+  const getNoteKey = async () => {
+    if (window.hedNoteKeyUtils && window.hedNoteKeyUtils.getNoteKey) {
+      return await window.hedNoteKeyUtils.getNoteKey();
+    }
+    // Fallback if utils not loaded yet
+    return `hed-note:${window.location.href}`;
+  };
 
   /**
    * Parses the full note text into its components.
@@ -71,7 +77,7 @@
   }
 
   async function loadNote() {
-    const key = getNoteKey();
+    const key = await getNoteKey();
     try {
       const data = await chrome.storage.local.get([key]);
       return data[key] || null; // Return null if no note exists
@@ -82,17 +88,30 @@
   }
 
   async function saveNote(text, position, folded) {
-    const key = getNoteKey();
+    const key = await getNoteKey();
     try {
       // If text is empty, remove the note from storage
       if (!text || text.trim() === "") {
         await chrome.storage.local.remove(key);
         return;
       }
+
+      // Load existing note to preserve creation date
+      const data = await chrome.storage.local.get([key]);
+      const existingNote = data[key];
+      const now = Date.now();
+
       // Parse color from text to save it correctly
       const { color } = parseNoteText(text);
       await chrome.storage.local.set({
-        [key]: { text, position, folded, color },
+        [key]: {
+          text,
+          position,
+          folded,
+          color,
+          createdAt: existingNote?.createdAt || now,
+          editedAt: now,
+        },
       });
     } catch (e) {
       console.error("HED: Error saving note", e);

@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HED Options</title>
+    <style>
+      /* Solarized Dark color scheme */
+      :root {
+        --base03: #002b36;
+        --base02: #073642;
+        --base01: #586e75;
+        --base00: #657b83;
+        --base0: #839496;
+        --base1: #93a1a1;
+        --base2: #eee8d5;
+        --base3: #fdf6e3;
+        --yellow: #b58900;
+        --orange: #cb4b16;
+        --red: #dc322f;
+        --magenta: #d33682;
+        --violet: #6c71c4;
+        --blue: #268bd2;
+        --cyan: #2aa198;
+        --green: #859900;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 20px;
+        background: var(--base03);
+        color: var(--base0);
+      }
+      .container {
+        background: var(--base02);
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      }
+      h1 {
+        margin-top: 0;
+        color: var(--base1);
+        font-size: 24px;
+        border-bottom: 2px solid var(--blue);
+        padding-bottom: 10px;
+      }
+      h2 {
+        color: var(--base1);
+        font-size: 18px;
+        margin-top: 24px;
+        margin-bottom: 12px;
+      }
+      .section {
+        margin-bottom: 24px;
+      }
+      .description {
+        color: var(--base0);
+        font-size: 14px;
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+      .domain-list {
+        margin-bottom: 12px;
+      }
+      .domain-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        background: var(--base03);
+        border-radius: 4px;
+        margin-bottom: 6px;
+        border: 1px solid var(--base01);
+      }
+      .domain-item code {
+        flex: 1;
+        background: var(--base03);
+        color: var(--cyan);
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-family: monospace;
+        font-size: 13px;
+        border: 1px solid var(--base01);
+      }
+      .domain-item button {
+        padding: 4px 12px;
+        background: var(--red);
+        color: var(--base3);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .domain-item button:hover {
+        background: var(--orange);
+      }
+      .add-domain {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .add-domain input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid var(--base01);
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: monospace;
+        background: var(--base03);
+        color: var(--base1);
+      }
+      .add-domain input::placeholder {
+        color: var(--base01);
+      }
+      .add-domain input:focus {
+        outline: none;
+        border-color: var(--blue);
+      }
+      .add-domain button {
+        padding: 8px 16px;
+        background: var(--blue);
+        color: var(--base3);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .add-domain button:hover {
+        background: var(--cyan);
+      }
+      .status {
+        padding: 12px;
+        border-radius: 4px;
+        margin-top: 16px;
+        display: none;
+        font-size: 14px;
+      }
+      .status.success {
+        background: var(--base03);
+        color: var(--green);
+        border: 1px solid var(--green);
+        display: block;
+      }
+      .status.error {
+        background: var(--base03);
+        color: var(--red);
+        border: 1px solid var(--red);
+        display: block;
+      }
+      .example {
+        background: var(--base03);
+        padding: 12px;
+        border-radius: 4px;
+        border-left: 4px solid var(--yellow);
+        margin-top: 12px;
+        font-size: 13px;
+        color: var(--base0);
+      }
+      .example strong {
+        color: var(--yellow);
+      }
+      .example code {
+        color: var(--cyan);
+        background: var(--base02);
+        padding: 2px 4px;
+        border-radius: 2px;
+      }
+      .empty-state {
+        color: var(--base01);
+        font-style: italic;
+        padding: 12px;
+        text-align: center;
+      }
+      .table-container {
+        overflow-x: auto;
+        margin-top: 12px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--base01);
+      }
+      th {
+        background: var(--base03);
+        color: var(--base1);
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+      }
+      th.sortable {
+        cursor: pointer;
+        user-select: none;
+      }
+      th.sortable:hover {
+        color: var(--blue);
+      }
+      th.sortable::after {
+        content: " ↕";
+        color: var(--base01);
+        font-size: 10px;
+      }
+      th.sorted-asc::after {
+        content: " ↑";
+        color: var(--blue);
+      }
+      th.sorted-desc::after {
+        content: " ↓";
+        color: var(--blue);
+      }
+      tbody tr:hover {
+        background: var(--base03);
+      }
+      .note-url {
+        font-family: monospace;
+        font-size: 11px;
+        word-break: break-all;
+        max-width: 300px;
+      }
+      .note-url a {
+        color: var(--cyan);
+        text-decoration: none;
+      }
+      .note-url a:hover {
+        color: var(--blue);
+        text-decoration: underline;
+      }
+      .note-preview {
+        color: var(--base0);
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .note-date {
+        color: var(--base01);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .delete-note-btn {
+        padding: 4px 10px;
+        background: var(--red);
+        color: var(--base3);
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 11px;
+      }
+      .delete-note-btn:hover {
+        background: var(--orange);
+      }
+      /* Modal styles */
+      .modal-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-backdrop.show {
+        display: flex;
+      }
+      .modal {
+        background: var(--base02);
+        border: 2px solid var(--base01);
+        border-radius: 8px;
+        padding: 24px;
+        max-width: 500px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+      }
+      .modal-title {
+        color: var(--base1);
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 12px 0;
+      }
+      .modal-content {
+        color: var(--base0);
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+      .modal-content code {
+        color: var(--cyan);
+        background: var(--base03);
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: monospace;
+        font-size: 12px;
+        word-break: break-all;
+      }
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+      .modal-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .modal-btn-cancel {
+        background: var(--base01);
+        color: var(--base1);
+      }
+      .modal-btn-cancel:hover {
+        background: var(--base00);
+      }
+      .modal-btn-delete {
+        background: var(--red);
+        color: var(--base3);
+      }
+      .modal-btn-delete:hover {
+        background: var(--orange);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>HED Settings</h1>
+
+      <div class="section">
+        <h2>URL Prefix Note Grouping</h2>
+        <div class="description">
+          By default, notes are saved per full URL. For sites with client-side
+          routing, this can cause notes to be lost when navigating between
+          pages. Add URL prefixes below to save notes for all pages that start
+          with that prefix.
+        </div>
+
+        <div class="domain-list" id="domainList">
+          <div class="empty-state">No URL prefixes configured yet</div>
+        </div>
+
+        <div class="add-domain">
+          <input
+            type="text"
+            id="newDomain"
+            placeholder="https://mail.google.com/chat/"
+          />
+          <button id="addDomainBtn">Add Prefix</button>
+        </div>
+
+        <div class="example">
+          <strong>Examples:</strong><br />
+          • Add <code>https://mail.google.com/chat/</code> to keep the same note
+          across all Google Chat spaces<br />
+          • Add <code>https://github.com/user/repo</code> to share notes across
+          all pages in that repository<br />
+          • Add <code>https://example.com/docs/</code> to group all
+          documentation pages
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Manage Notes</h2>
+        <div class="description">
+          View and manage all your saved notes. Click column headers to sort.
+        </div>
+
+        <div class="table-container">
+          <table id="notesTable">
+            <thead>
+              <tr>
+                <th class="sortable" data-sort="url">URL/Prefix</th>
+                <th class="sortable" data-sort="preview">Preview</th>
+                <th class="sortable" data-sort="created">Created</th>
+                <th class="sortable" data-sort="edited">Last Edited</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="notesTableBody">
+              <tr>
+                <td colspan="5" class="empty-state">No notes saved yet</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="status" id="status"></div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-backdrop" id="confirmModal">
+      <div class="modal">
+        <h3 class="modal-title">Delete Note</h3>
+        <div class="modal-content" id="modalContent">
+          Are you sure you want to delete this note?
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-cancel" id="modalCancel">
+            Cancel
+          </button>
+          <button class="modal-btn modal-btn-delete" id="modalConfirm">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="options.js"></script>
+  </body>
+</html>

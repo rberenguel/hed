@@ -29,10 +29,11 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
   - **Live Preview**: Just like the highlighter, the selector shows you what will be matched as you type.
   - > **Heads up**: Be cautious with patterns that can match empty strings (like `(a*)` or `(.*)?`), as live previewing them can sometimes affect page performance.
 
-- **Per-Page Notes**: Create and edit a persistent, draggable "post-it" note for any page.
-  - **ed Integration**: Use the `e` command to load the current page's note into the `ed` buffer. All standard commands (`a`, `d`, `s/old/new/g`, etc.) can be used to edit it.
-  - **Saving**: When in note-edit mode, the `w` command saves the buffer back to the page's note. If the note is empty, `w` will delete the note and remove it from the page.
-  - **Markdown Titles**: The first line of the note is treated as a title. You can set its color using a simple syntax:
+- **Per-Page Notes**: Create and edit persistent, draggable "post-it" notes for any page.
+  - **ed Integration**: Use the `e` command to load the current page's note into the `ed` buffer. All standard commands (`a`, `d`, `s/old/new/g`, etc.) work as expected.
+  - **Saving**: The `w` command saves the buffer back to the page's note. Empty notes are automatically removed.
+  - **URL Prefix Grouping**: Notes are saved per URL by default, but you can configure URL prefix grouping to share notes across multiple pages—perfect for single-page applications with client-side routing (like Google Chat or GitHub repositories).
+  - **Markdown Titles**: The first line of each note is treated as a title and supports color customization:
 
 ```markdown
 # .b My Blue Note (blue)
@@ -68,3 +69,28 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
 3.  Press **`Ctrl+H`** to launch the HED palette.
 4.  Enter standard `ed` commands, a highlight command (`/regex/H`), or a selection command (`/regex/S`).
 5.  When finished, type `w` and press `Enter` to save your changes and close the editor.
+
+## Configuration
+
+Right-click the HED extension icon and select **Options** to access:
+
+### URL Prefix Note Grouping
+
+Share notes across multiple pages that start with the same URL prefix. This is useful for single-page applications with client-side routing.
+
+**Examples:**
+
+- `https://mail.google.com/chat/` keeps the same note across all Google Chat conversations
+- `https://github.com/user/repo` shares notes across all pages in a repository
+- `https://example.com/docs/` groups all documentation pages together
+
+Simply add your desired URL prefixes in the options page, one per line.
+
+### Note Management
+
+View and manage all your saved notes in a sortable table:
+
+- **Sort by URL, creation date, or last edited** by clicking column headers
+- **Preview note content** to see the first 50 characters of each note
+- **Quick navigation** by clicking any URL to open that page in a new tab
+- **Delete notes** to remove unwanted notes with a single click
