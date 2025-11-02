@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "hed",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Highlighting (and Javascript-ed) Ed.",
   "permissions": [
     "activeTab",
@@ -11,11 +11,11 @@
     "storage"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background.js"
   },
   "action": { "default_icon": { "128": "media/hed.png" } },
   "icons": { "128": "media/hed.png" },
-  "options_page": "options.html",
+  "options_page": "src/options/options.html",
   "commands": {
     "toggle-palette": {
       "suggested_key": { "default": "Ctrl+H", "mac": "MacCtrl+H" },
@@ -26,14 +26,14 @@
     {
       "matches": ["<all_urls>"],
       "js": [
-        "ed.js",
-        "highlighter.js",
-        "noteKeyUtils.js",
-        "palette.js",
-        "selector.js",
-        "notes.js"
+        "src/content/ed.js",
+        "src/content/highlighter.js",
+        "src/content/noteKeyUtils.js",
+        "src/content/palette.js",
+        "src/content/selector.js",
+        "src/content/notes.js"
       ],
-      "css": ["palette.css", "highlights.css", "notes.css", "fonts/monoid.css"],
+      "css": ["styles/palette.css", "styles/highlights.css", "styles/notes.css", "fonts/monoid.css"],
       "run_at": "document_idle",
       "all_frames": true
     }
@@ -41,9 +41,9 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "palette.css",
-        "highlights.css",
-        "notes.css",
+        "styles/palette.css",
+        "styles/highlights.css",
+        "styles/notes.css",
         "fonts/monoid.css"
       ],
       "matches": ["<all_urls>"]
