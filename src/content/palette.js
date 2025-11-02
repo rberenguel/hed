@@ -213,7 +213,16 @@
 
       if (result.status === "input") {
         input.placeholder = "";
-        renderOutput(output, null);
+        // For single-line 'c' command, prepopulate the input
+        if (result.prepopulate) {
+          input.value = result.prepopulate;
+        }
+        // For multi-line 'c' command, show what's being changed
+        if (result.output) {
+          renderOutput(output, result.output);
+        } else {
+          renderOutput(output, null);
+        }
         return;
       }
 
@@ -296,9 +305,15 @@
       input.placeholder = edInstance.getPrompt();
     };
 
+    let isPreviewingHighlight = false;
+
     backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) {
-        window.regexHighlighter.remove();
+        // Only remove highlights if we were actively previewing them
+        if (isPreviewingHighlight) {
+          window.regexHighlighter.remove();
+          isPreviewingHighlight = false;
+        }
         closePalette();
       }
     });
@@ -308,7 +323,11 @@
 
     input.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
-        window.regexHighlighter.remove();
+        // Only remove highlights if we were actively previewing them
+        if (isPreviewingHighlight) {
+          window.regexHighlighter.remove();
+          isPreviewingHighlight = false;
+        }
         closePalette();
         return;
       }
@@ -332,13 +351,17 @@
       ) {
         const regexString = command.substring(1, command.length - 2);
         clearTimeout(input.highlightTimeout);
-        input.highlightTimeout = setTimeout(
-          () => window.regexHighlighter.apply(regexString),
-          100,
-        );
+        input.highlightTimeout = setTimeout(() => {
+          window.regexHighlighter.apply(regexString);
+          isPreviewingHighlight = true;
+        }, 100);
       } else {
         clearTimeout(input.highlightTimeout);
-        window.regexHighlighter.remove();
+        // Only remove highlights if we were actively previewing them
+        if (isPreviewingHighlight) {
+          window.regexHighlighter.remove();
+          isPreviewingHighlight = false;
+        }
       }
     });
 

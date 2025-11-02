@@ -50,7 +50,7 @@
     try {
       regex = new RegExp(lastRegexString, "gd");
     } catch (e) {
-      console.error("Invalid Regex:", e);
+      // Silently ignore invalid regex during live preview
       return;
     }
 

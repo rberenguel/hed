@@ -60,10 +60,23 @@ class Ed {
         return this._shellCommand(shellCommand, range);
       case "a":
       case "i":
-      case "c":
         this.inputMode = true;
         this.lastCommandForInput = { command: command[0], range };
         return { status: "input" };
+      case "c":
+        this.inputMode = true;
+        this.lastCommandForInput = { command: command[0], range };
+        // Show what's being changed
+        const changePreview = this._print(range.start, range.end);
+        if (changePreview.error) {
+          return changePreview;
+        }
+        // For single-line changes, prepopulate the input
+        if (range.start === range.end) {
+          return { status: "input", prepopulate: changePreview };
+        }
+        // For multi-line changes, show in output area
+        return { status: "input", output: changePreview };
       case "d":
         const delOutput = this._deleteLines(range.start, range.end);
         return delOutput.error ? delOutput : { output: "" };
@@ -331,12 +344,10 @@ class Ed {
     if (addr === ".") return startingLine + 1;
     if (addr === "$") return this.buffer.length;
     if (addr === "") return startingLine + 1;
-    console.log(addr);
     const num = parseInt(addr, 10);
     if (!isNaN(num)) return num;
 
     if (addr.startsWith("/") && addr.endsWith("/")) {
-      console.log("Address regex");
       const regexStr = addr.slice(1, -1);
       try {
         const regex = new RegExp(regexStr);

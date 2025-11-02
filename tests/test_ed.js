@@ -67,6 +67,7 @@ describe("Ed Class Core Functionality", function () {
     it("'c' (change) should enter input mode and replace lines", function () {
       let result = ed.process("1,2c"); // change lines 1 and 2
       expect(ed.inputMode).to.be.true;
+      expect(result.output).to.equal("one\ntwo"); // Shows what's being changed
 
       ed.process("replacement");
       result = ed.process(".");
@@ -74,6 +75,19 @@ describe("Ed Class Core Functionality", function () {
       expect(ed.inputMode).to.be.false;
       expect(ed.buffer).to.deep.equal(["replacement", "three"]);
       expect(ed.currentLine).to.equal(0);
+    });
+
+    it("'c' (change) on single line should prepopulate", function () {
+      let result = ed.process("2c"); // change line 2 only
+      expect(ed.inputMode).to.be.true;
+      expect(result.prepopulate).to.equal("two"); // Prepopulates for single line
+      expect(result.output).to.be.undefined;
+
+      ed.process("changed");
+      result = ed.process(".");
+
+      expect(ed.inputMode).to.be.false;
+      expect(ed.buffer).to.deep.equal(["one", "changed", "three"]);
     });
 
     it("'d' (delete) should remove lines", function () {
