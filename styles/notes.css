@@ -91,6 +91,8 @@
   font-family:
     "monoidregular", "Monoid", "Monoid regular", "Monoid Regular",
     "Monoid Nerd Font", "Roboto", monospace !important;
+  user-select: text;
+  cursor: text;
 }
 
 .hed-note-content:focus {
@@ -167,4 +169,73 @@
 }
 #hed-postit-note.hed-note-color-t .hed-note-content {
   color: #b58900;
+}
+
+/* List item styling */
+.hed-note-line {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.hed-note-line.hed-list-item {
+  padding-left: 20px;
+  position: relative;
+}
+
+.hed-note-line.hed-list-item::before {
+  content: "•";
+  position: absolute;
+  left: 8px;
+  font-weight: bold;
+}
+
+/* Clipboard copy line styling */
+.hed-note-line.hed-copy-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.hed-note-line.hed-copy-line:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+/* Checkbox line styling */
+.hed-note-line.hed-checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.hed-note-line.hed-checkbox-line:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+/* Icon styling for inline SVGs */
+.hed-note-line .hed-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: #666;
+}
+
+.hed-note-line .hed-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+}
+
+.hed-note-line.hed-checkbox-line[data-checked="true"] span:last-child {
+  text-decoration: line-through;
+  opacity: 0.6;
 }

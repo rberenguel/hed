@@ -5,6 +5,7 @@
     noteContent: null,
     noteHeader: null,
     noteTitleSpan: null,
+    getBodyTextFromDOM: null, // Will be set below
     ...window.hedNotes, // Preserve any existing properties
   };
 
@@ -21,6 +22,165 @@
     // Fallback if utils not loaded yet
     return `hed-note:${window.location.href}`;
   };
+
+  // Inline SVG icons from iconoir
+  const ICONS = {
+    copy: '<svg width="14" height="14" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19.4 20H9.6C9.26863 20 9 19.7314 9 19.4V9.6C9 9.26863 9.26863 9 9.6 9H19.4C19.7314 9 20 9.26863 20 9.6V19.4C20 19.7314 19.7314 20 19.4 20Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 9V4.6C15 4.26863 14.7314 4 14.4 4H4.6C4.26863 4 4 4.26863 4 4.6V14.4C4 14.7314 4.26863 15 4.6 15H9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    square: '<svg width="14" height="14" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 3.6V20.4C21 20.7314 20.7314 21 20.4 21H3.6C3.26863 21 3 20.7314 3 20.4V3.6C3 3.26863 3.26863 3 3.6 3H20.4C20.7314 3 21 3.26863 21 3.6Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    checkSquare: '<svg width="14" height="14" viewBox="0 0 24 24" stroke-width="1.5" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 20.4V3.6C3 3.26863 3.26863 3 3.6 3H20.4C20.7314 3 21 3.26863 21 3.6V20.4C21 20.7314 20.7314 21 20.4 21H3.6C3.26863 21 3 20.7314 3 20.4Z" stroke="currentColor" stroke-width="1.5"/><path d="M7 12.5L10 15.5L17 8.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  };
+
+  /**
+   * Renders the note body with special line types
+   * @param {string} bodyText - The body text to render
+   * @param {HTMLElement} container - The container element to render into
+   */
+  function renderNoteBody(bodyText, container) {
+    container.innerHTML = "";
+    const lines = bodyText.split("\n");
+
+    lines.forEach((line, index) => {
+      const lineDiv = document.createElement("div");
+      lineDiv.className = "hed-note-line";
+
+      // Check for checkbox lines: - [ ] or - [x]
+      const checkboxMatch = line.match(/^- \[([ x])\] (.*)$/);
+      if (checkboxMatch) {
+        const isChecked = checkboxMatch[1] === "x";
+        const text = checkboxMatch[2];
+        lineDiv.classList.add("hed-checkbox-line");
+        lineDiv.dataset.checked = isChecked;
+        lineDiv.dataset.lineIndex = index;
+
+        const iconSpan = document.createElement("span");
+        iconSpan.className = "hed-icon";
+        iconSpan.innerHTML = isChecked ? ICONS.checkSquare : ICONS.square;
+        lineDiv.appendChild(iconSpan);
+
+        const textSpan = document.createElement("span");
+        textSpan.textContent = text;
+        lineDiv.appendChild(textSpan);
+
+        lineDiv.addEventListener("click", handleCheckboxClick);
+        container.appendChild(lineDiv);
+        return;
+      }
+
+      // Check for copy lines: * text
+      if (line.startsWith("* ")) {
+        const text = line.substring(2);
+        lineDiv.classList.add("hed-copy-line");
+
+        const iconSpan = document.createElement("span");
+        iconSpan.className = "hed-icon";
+        iconSpan.innerHTML = ICONS.copy;
+        lineDiv.appendChild(iconSpan);
+
+        const textSpan = document.createElement("span");
+        textSpan.textContent = text;
+        lineDiv.appendChild(textSpan);
+
+        lineDiv.addEventListener("click", () => handleCopyClick(text));
+        container.appendChild(lineDiv);
+        return;
+      }
+
+      // Check for list items: - text (but not checkbox)
+      if (line.startsWith("- ")) {
+        const text = line.substring(2);
+        lineDiv.classList.add("hed-list-item");
+        lineDiv.textContent = text;
+        container.appendChild(lineDiv);
+        return;
+      }
+
+      // Regular line
+      lineDiv.textContent = line || "\u00A0"; // Non-breaking space for empty lines
+      container.appendChild(lineDiv);
+    });
+  }
+
+  /**
+   * Handles checkbox click events
+   * @param {Event} event
+   */
+  async function handleCheckboxClick(event) {
+    const lineDiv = event.currentTarget;
+    const lineIndex = parseInt(lineDiv.dataset.lineIndex);
+    const isChecked = lineDiv.dataset.checked === "true";
+    const newChecked = !isChecked;
+
+    // Update the UI immediately
+    lineDiv.dataset.checked = newChecked;
+
+    // Update the icon span innerHTML
+    const iconSpan = lineDiv.querySelector(".hed-icon");
+    if (iconSpan) {
+      iconSpan.innerHTML = newChecked ? ICONS.checkSquare : ICONS.square;
+    }
+
+    // Update the stored text
+    const fullText = buildNoteText(
+      window.hedNotes.noteTitleSpan.textContent,
+      getBodyTextFromDOM(),
+      window.hedNotes.noteUI.dataset.color,
+    );
+
+    // Save to storage
+    await saveNote(
+      fullText,
+      {
+        x: window.hedNotes.noteUI.offsetLeft,
+        y: window.hedNotes.noteUI.offsetTop,
+      },
+      window.hedNotes.noteUI.classList.contains("folded"),
+    );
+  }
+
+  /**
+   * Handles copy click events
+   * @param {string} text - The text to copy
+   */
+  async function handleCopyClick(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.error("HED: Failed to copy text", err);
+    }
+  }
+
+  /**
+   * Reconstructs the body text from the rendered DOM
+   * @returns {string}
+   */
+  function getBodyTextFromDOM() {
+    const lines = [];
+    const lineElements = window.hedNotes.noteContent.querySelectorAll(".hed-note-line");
+
+    lineElements.forEach((lineDiv) => {
+      if (lineDiv.classList.contains("hed-checkbox-line")) {
+        const isChecked = lineDiv.dataset.checked === "true";
+        const textSpan = lineDiv.querySelector("span:last-child");
+        const text = textSpan ? textSpan.textContent : "";
+        lines.push(`- [${isChecked ? "x" : " "}] ${text}`);
+      } else if (lineDiv.classList.contains("hed-copy-line")) {
+        const textSpan = lineDiv.querySelector("span:last-child");
+        const text = textSpan ? textSpan.textContent : "";
+        lines.push(`* ${text}`);
+      } else if (lineDiv.classList.contains("hed-list-item")) {
+        const text = lineDiv.textContent;
+        lines.push(`- ${text}`);
+      } else {
+        const text = lineDiv.textContent;
+        lines.push(text === "\u00A0" ? "" : text);
+      }
+    });
+
+    return lines.join("\n");
+  }
+
+  // Expose getBodyTextFromDOM globally for palette.js if needed
+  window.hedNotes.getBodyTextFromDOM = getBodyTextFromDOM;
 
   /**
    * Parses the full note text into its components.
@@ -163,9 +323,9 @@
     //controls.appendChild(editButton);
     window.hedNotes.noteHeader.appendChild(controls);
 
-    window.hedNotes.noteContent = document.createElement("pre");
+    window.hedNotes.noteContent = document.createElement("div");
     window.hedNotes.noteContent.className = "hed-note-content";
-    window.hedNotes.noteContent.textContent = body;
+    renderNoteBody(body, window.hedNotes.noteContent);
 
     window.hedNotes.noteUI.appendChild(window.hedNotes.noteHeader);
     window.hedNotes.noteUI.appendChild(window.hedNotes.noteContent);
@@ -195,7 +355,7 @@
 
       const fullText = buildNoteText(
         window.hedNotes.noteTitleSpan.textContent,
-        window.hedNotes.noteContent.textContent,
+        getBodyTextFromDOM(),
         window.hedNotes.noteUI.dataset.color,
       );
       saveNote(
@@ -221,7 +381,7 @@
 
       const fullText = buildNoteText(
         window.hedNotes.noteTitleSpan.textContent,
-        window.hedNotes.noteContent.textContent,
+        getBodyTextFromDOM(),
         window.hedNotes.noteUI.dataset.color,
       );
       saveNote(
@@ -289,7 +449,7 @@
       window.hedNotes.noteUI
     ) {
       window.hedNotes.noteTitleSpan.textContent = title;
-      window.hedNotes.noteContent.textContent = body;
+      renderNoteBody(body, window.hedNotes.noteContent);
 
       // Update color
       window.hedNotes.noteUI.dataset.color = color;
