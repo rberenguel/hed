@@ -1,10 +1,7 @@
 (() => {
   // Store all state on the global object to avoid scope issues
   window.hedNotes = {
-    noteUI: null,
-    noteContent: null,
-    noteHeader: null,
-    noteTitleSpan: null,
+    notes: {}, // Store multiple note UIs by number: { 0: {noteUI, noteContent, ...}, 1: {...}, ... }
     getBodyTextFromDOM: null, // Will be set below
     ...window.hedNotes, // Preserve any existing properties
   };
@@ -14,7 +11,7 @@
   let dragOffsetX = 0;
   let dragOffsetY = 0;
 
-  const NOTE_ID = "hed-postit-note";
+  const NOTE_CLASS = "hed-postit-note";
   const getNoteKey = async () => {
     if (window.hedNoteKeyUtils && window.hedNoteKeyUtils.getNoteKey) {
       return await window.hedNoteKeyUtils.getNoteKey();
@@ -101,6 +98,19 @@
   }
 
   /**
+   * Gets the note number from a DOM element or its parents
+   * @param {HTMLElement} element
+   * @returns {number|null}
+   */
+  function getNoteNumberFromElement(element) {
+    const noteUI = element.closest('.hed-postit-note');
+    if (noteUI && noteUI.dataset.noteNumber) {
+      return parseInt(noteUI.dataset.noteNumber);
+    }
+    return null;
+  }
+
+  /**
    * Handles checkbox click events
    * @param {Event} event
    */
@@ -119,21 +129,30 @@
       iconSpan.innerHTML = newChecked ? ICONS.checkSquare : ICONS.square;
     }
 
+    // Find which note this belongs to
+    const noteNumber = getNoteNumberFromElement(lineDiv);
+    if (noteNumber === null) return;
+
+    const noteState = window.hedNotes.notes[noteNumber];
+    if (!noteState) return;
+
     // Update the stored text
+    const titleText = noteState.noteTitleSpan.textContent.replace(/^\[\d+\] /, '');
     const fullText = buildNoteText(
-      window.hedNotes.noteTitleSpan.textContent,
-      getBodyTextFromDOM(),
-      window.hedNotes.noteUI.dataset.color,
+      titleText,
+      getBodyTextFromDOMForNote(noteNumber),
+      noteState.noteUI.dataset.color,
     );
 
     // Save to storage
     await saveNote(
+      noteNumber,
       fullText,
       {
-        x: window.hedNotes.noteUI.offsetLeft,
-        y: window.hedNotes.noteUI.offsetTop,
+        x: noteState.noteUI.offsetLeft,
+        y: noteState.noteUI.offsetTop,
       },
-      window.hedNotes.noteUI.classList.contains("folded"),
+      noteState.noteUI.classList.contains("folded"),
     );
   }
 
@@ -150,12 +169,16 @@
   }
 
   /**
-   * Reconstructs the body text from the rendered DOM
+   * Reconstructs the body text from the rendered DOM for a specific note
+   * @param {number} noteNumber
    * @returns {string}
    */
-  function getBodyTextFromDOM() {
+  function getBodyTextFromDOMForNote(noteNumber) {
+    const noteState = window.hedNotes.notes[noteNumber];
+    if (!noteState || !noteState.noteContent) return "";
+
     const lines = [];
-    const lineElements = window.hedNotes.noteContent.querySelectorAll(".hed-note-line");
+    const lineElements = noteState.noteContent.querySelectorAll(".hed-note-line");
 
     lineElements.forEach((lineDiv) => {
       if (lineDiv.classList.contains("hed-checkbox-line")) {
@@ -179,8 +202,8 @@
     return lines.join("\n");
   }
 
-  // Expose getBodyTextFromDOM globally for palette.js if needed
-  window.hedNotes.getBodyTextFromDOM = getBodyTextFromDOM;
+  // Expose function globally for palette.js
+  window.hedNotes.getBodyTextFromDOMForNote = getBodyTextFromDOMForNote;
 
   /**
    * Parses the full note text into its components.
@@ -236,50 +259,90 @@
     return `${titleLine}\n${body}`;
   }
 
-  async function loadNote() {
+  async function loadNote(noteNumber = 0) {
     const key = await getNoteKey();
     try {
       const data = await chrome.storage.local.get([key]);
-      return data[key] || null; // Return null if no note exists
+      const notesObject = data[key] || {};
+      return notesObject[noteNumber] || null; // Return null if note doesn't exist
     } catch (e) {
       console.error("HED: Error loading note", e);
       return null;
     }
   }
 
-  async function saveNote(text, position, folded) {
+  async function loadAllNotes() {
     const key = await getNoteKey();
     try {
-      // If text is empty, remove the note from storage
+      const data = await chrome.storage.local.get([key]);
+      const stored = data[key];
+
+      if (!stored) {
+        return {}; // No notes exist
+      }
+
+      // Migration: Check if this is old format (has 'text' property at root)
+      if (stored.text !== undefined) {
+        console.log("HED: Migrating old note format to new format");
+        // Old format - migrate to new format with note number 0
+        const migratedData = {
+          0: stored
+        };
+        // Save migrated data
+        await chrome.storage.local.set({ [key]: migratedData });
+        return migratedData;
+      }
+
+      return stored; // Already new format
+    } catch (e) {
+      console.error("HED: Error loading notes", e);
+      return {};
+    }
+  }
+
+  async function saveNote(noteNumber, text, position, folded) {
+    const key = await getNoteKey();
+    try {
+      // Load all notes
+      const data = await chrome.storage.local.get([key]);
+      const notesObject = data[key] || {};
+
+      // If text is empty, remove this specific note
       if (!text || text.trim() === "") {
-        await chrome.storage.local.remove(key);
+        delete notesObject[noteNumber];
+        // If no notes left, remove the key entirely
+        if (Object.keys(notesObject).length === 0) {
+          await chrome.storage.local.remove(key);
+        } else {
+          await chrome.storage.local.set({ [key]: notesObject });
+        }
         return;
       }
 
       // Load existing note to preserve creation date
-      const data = await chrome.storage.local.get([key]);
-      const existingNote = data[key];
+      const existingNote = notesObject[noteNumber];
       const now = Date.now();
 
       // Parse color from text to save it correctly
       const { color } = parseNoteText(text);
-      await chrome.storage.local.set({
-        [key]: {
-          text,
-          position,
-          folded,
-          color,
-          createdAt: existingNote?.createdAt || now,
-          editedAt: now,
-        },
-      });
+      notesObject[noteNumber] = {
+        text,
+        position,
+        folded,
+        color,
+        createdAt: existingNote?.createdAt || now,
+        editedAt: now,
+      };
+
+      await chrome.storage.local.set({ [key]: notesObject });
     } catch (e) {
       console.error("HED: Error saving note", e);
     }
   }
 
-  function createNoteUI(noteData) {
-    if (document.getElementById(NOTE_ID)) return; // Already exists
+  function createNoteUI(noteNumber, noteData) {
+    // Check if note already exists
+    if (window.hedNotes.notes[noteNumber]) return; // Already exists
 
     const { title, body, color } = parseNoteText(noteData.text);
 
@@ -288,23 +351,30 @@
       return;
     }
 
-    // Use window.hedNotes state
-    window.hedNotes.noteUI = document.createElement("div");
-    window.hedNotes.noteUI.id = NOTE_ID;
+    // Create note state object
+    const noteState = {};
+    window.hedNotes.notes[noteNumber] = noteState;
+
+    // Create UI elements
+    noteState.noteUI = document.createElement("div");
+    noteState.noteUI.className = NOTE_CLASS;
+    noteState.noteUI.dataset.noteNumber = noteNumber; // Store note number
 
     // Add folded and color classes
-    window.hedNotes.noteUI.className = noteData.folded ? "folded" : "";
-    window.hedNotes.noteUI.classList.add(`hed-note-color-${color}`);
-    window.hedNotes.noteUI.dataset.color = color; // Store color
+    if (noteData.folded) {
+      noteState.noteUI.classList.add("folded");
+    }
+    noteState.noteUI.classList.add(`hed-note-color-${color}`);
+    noteState.noteUI.dataset.color = color; // Store color
 
-    window.hedNotes.noteUI.style.left = `${noteData.position.x}px`;
-    window.hedNotes.noteUI.style.top = `${noteData.position.y}px`;
+    noteState.noteUI.style.left = `${noteData.position.x}px`;
+    noteState.noteUI.style.top = `${noteData.position.y}px`;
 
-    window.hedNotes.noteHeader = document.createElement("div");
-    window.hedNotes.noteHeader.className = "hed-note-header";
-    window.hedNotes.noteTitleSpan = document.createElement("span");
-    window.hedNotes.noteTitleSpan.textContent = title;
-    window.hedNotes.noteHeader.appendChild(window.hedNotes.noteTitleSpan);
+    noteState.noteHeader = document.createElement("div");
+    noteState.noteHeader.className = "hed-note-header";
+    noteState.noteTitleSpan = document.createElement("span");
+    noteState.noteTitleSpan.textContent = `[${noteNumber}] ${title}`;
+    noteState.noteHeader.appendChild(noteState.noteTitleSpan);
 
     const controls = document.createElement("div");
     controls.className = "hed-note-controls";
@@ -321,103 +391,115 @@
 
     controls.appendChild(foldButton);
     //controls.appendChild(editButton);
-    window.hedNotes.noteHeader.appendChild(controls);
+    noteState.noteHeader.appendChild(controls);
 
-    window.hedNotes.noteContent = document.createElement("div");
-    window.hedNotes.noteContent.className = "hed-note-content";
-    renderNoteBody(body, window.hedNotes.noteContent);
+    noteState.noteContent = document.createElement("div");
+    noteState.noteContent.className = "hed-note-content";
+    renderNoteBody(body, noteState.noteContent);
 
-    window.hedNotes.noteUI.appendChild(window.hedNotes.noteHeader);
-    window.hedNotes.noteUI.appendChild(window.hedNotes.noteContent);
-    document.body.appendChild(window.hedNotes.noteUI);
+    noteState.noteUI.appendChild(noteState.noteHeader);
+    noteState.noteUI.appendChild(noteState.noteContent);
+    document.body.appendChild(noteState.noteUI);
 
-    // --- Event Listeners (now referencing hedNotes state) ---
+    // --- Event Listeners (capturing noteNumber and noteState in closure) ---
 
-    window.hedNotes.noteHeader.addEventListener("mousedown", (e) => {
+    noteState.noteHeader.addEventListener("mousedown", (e) => {
       if (e.target.tagName === "BUTTON" || e.target.closest("button")) return;
       isDragging = true;
-      dragOffsetX = e.clientX - window.hedNotes.noteUI.offsetLeft;
-      dragOffsetY = e.clientY - window.hedNotes.noteUI.offsetTop;
-      window.hedNotes.noteUI.classList.add("dragging");
+      dragOffsetX = e.clientX - noteState.noteUI.offsetLeft;
+      dragOffsetY = e.clientY - noteState.noteUI.offsetTop;
+      noteState.noteUI.classList.add("dragging");
+      noteState.noteUI.dataset.draggingNote = noteNumber; // Track which note is being dragged
       e.preventDefault();
     });
 
     document.addEventListener("mousemove", (e) => {
       if (!isDragging) return;
-      window.hedNotes.noteUI.style.left = `${e.clientX - dragOffsetX}px`;
-      window.hedNotes.noteUI.style.top = `${e.clientY - dragOffsetY}px`;
+      const draggingNote = document.querySelector('[data-dragging-note]');
+      if (draggingNote) {
+        draggingNote.style.left = `${e.clientX - dragOffsetX}px`;
+        draggingNote.style.top = `${e.clientY - dragOffsetY}px`;
+      }
     });
 
     document.addEventListener("mouseup", (e) => {
       if (!isDragging) return;
-      isDragging = false;
-      window.hedNotes.noteUI.classList.remove("dragging");
+      const draggingNote = document.querySelector('[data-dragging-note]');
+      if (!draggingNote) return;
 
-      const fullText = buildNoteText(
-        window.hedNotes.noteTitleSpan.textContent,
-        getBodyTextFromDOM(),
-        window.hedNotes.noteUI.dataset.color,
-      );
-      saveNote(
-        fullText,
-        {
-          x: window.hedNotes.noteUI.offsetLeft,
-          y: window.hedNotes.noteUI.offsetTop,
-        },
-        window.hedNotes.noteUI.classList.contains("folded"),
-      );
+      isDragging = false;
+      const draggedNoteNumber = parseInt(draggingNote.dataset.draggingNote);
+      delete draggingNote.dataset.draggingNote;
+      draggingNote.classList.remove("dragging");
+
+      const draggedState = window.hedNotes.notes[draggedNoteNumber];
+      if (draggedState) {
+        const titleText = draggedState.noteTitleSpan.textContent.replace(/^\[\d+\] /, ''); // Remove [N] prefix
+        const fullText = buildNoteText(
+          titleText,
+          getBodyTextFromDOMForNote(draggedNoteNumber),
+          draggedState.noteUI.dataset.color,
+        );
+        saveNote(
+          draggedNoteNumber,
+          fullText,
+          {
+            x: draggedState.noteUI.offsetLeft,
+            y: draggedState.noteUI.offsetTop,
+          },
+          draggedState.noteUI.classList.contains("folded"),
+        );
+      }
     });
 
     foldButton.addEventListener("click", () => {
-      window.hedNotes.noteUI.classList.toggle("folded");
-      foldButton.textContent = window.hedNotes.noteUI.classList.contains(
-        "folded",
-      )
+      noteState.noteUI.classList.toggle("folded");
+      foldButton.textContent = noteState.noteUI.classList.contains("folded")
         ? "▧"
         : "–";
-      foldButton.title = window.hedNotes.noteUI.classList.contains("folded")
+      foldButton.title = noteState.noteUI.classList.contains("folded")
         ? "Unfold"
         : "Fold";
 
+      const titleText = noteState.noteTitleSpan.textContent.replace(/^\[\d+\] /, ''); // Remove [N] prefix
       const fullText = buildNoteText(
-        window.hedNotes.noteTitleSpan.textContent,
-        getBodyTextFromDOM(),
-        window.hedNotes.noteUI.dataset.color,
+        titleText,
+        getBodyTextFromDOMForNote(noteNumber),
+        noteState.noteUI.dataset.color,
       );
       saveNote(
+        noteNumber,
         fullText,
         {
-          x: window.hedNotes.noteUI.offsetLeft,
-          y: window.hedNotes.noteUI.offsetTop,
+          x: noteState.noteUI.offsetLeft,
+          y: noteState.noteUI.offsetTop,
         },
-        window.hedNotes.noteUI.classList.contains("folded"),
+        noteState.noteUI.classList.contains("folded"),
       );
     });
 
     /*editButton.addEventListener("click", (e) => {
       e.stopPropagation();
-      window.hedNotes.noteContent.focus();
+      noteState.noteContent.focus();
       chrome.runtime.sendMessage({ action: "toggle-palette" });
     });*/
 
-    window.hedNotes.noteContent.setAttribute("tabindex", "-1");
+    noteState.noteContent.setAttribute("tabindex", "-1");
   }
 
   /**
    * This is the globally exposed function for the palette to call.
    * It creates, updates, or removes the note UI based on the text.
+   * @param {number} noteNumber
    * @param {string} fullText
    */
-  window.hedNotes.createOrUpdateNote = (fullText) => {
+  window.hedNotes.createOrUpdateNote = (noteNumber, fullText) => {
     // Check for empty text first. If empty, remove the note UI.
     if (fullText.trim() === "") {
-      // Use window.hedNotes state
-      if (window.hedNotes.noteUI) {
-        window.hedNotes.noteUI.remove();
-        window.hedNotes.noteUI = null;
-        window.hedNotes.noteContent = null;
-        window.hedNotes.noteHeader = null;
-        window.hedNotes.noteTitleSpan = null;
+      const noteState = window.hedNotes.notes[noteNumber];
+      if (noteState && noteState.noteUI) {
+        noteState.noteUI.remove();
+        delete window.hedNotes.notes[noteNumber];
       }
       return;
     }
@@ -425,45 +507,51 @@
     const { title, body, color } = parseNoteText(fullText);
 
     // If note doesn't exist, create it
-    if (!window.hedNotes.noteUI) {
+    if (!window.hedNotes.notes[noteNumber]) {
       (async () => {
-        let noteData = await loadNote(); // Check storage for position
+        let noteData = await loadNote(noteNumber); // Check storage for position
         if (!noteData) {
+          // Default position, offset by note number
           noteData = {
             text: fullText,
-            position: { x: 20, y: 20 },
+            position: { x: 20 + (noteNumber * 30), y: 20 + (noteNumber * 30) },
             folded: false,
           };
         } else {
           noteData.text = fullText;
         }
-        createNoteUI(noteData);
+        createNoteUI(noteNumber, noteData);
       })();
       return;
     }
 
     // If note exists, update it
-    if (
-      window.hedNotes.noteTitleSpan &&
-      window.hedNotes.noteContent &&
-      window.hedNotes.noteUI
-    ) {
-      window.hedNotes.noteTitleSpan.textContent = title;
-      renderNoteBody(body, window.hedNotes.noteContent);
+    const noteState = window.hedNotes.notes[noteNumber];
+    if (noteState && noteState.noteTitleSpan && noteState.noteContent && noteState.noteUI) {
+      noteState.noteTitleSpan.textContent = `[${noteNumber}] ${title}`;
+      renderNoteBody(body, noteState.noteContent);
 
       // Update color
-      window.hedNotes.noteUI.dataset.color = color;
-      window.hedNotes.noteUI.className =
-        window.hedNotes.noteUI.classList.contains("folded") ? "folded" : ""; // Reset classes
-      window.hedNotes.noteUI.classList.add(`hed-note-color-${color}`); // Add new color
+      noteState.noteUI.dataset.color = color;
+
+      // Reset color classes but preserve other classes
+      const isFolded = noteState.noteUI.classList.contains("folded");
+      noteState.noteUI.className = NOTE_CLASS;
+      if (isFolded) {
+        noteState.noteUI.classList.add("folded");
+      }
+      noteState.noteUI.classList.add(`hed-note-color-${color}`);
     }
   };
 
-  // Load the note when the page is ready
+  // Load all notes when the page is ready
   (async () => {
-    const noteData = await loadNote();
-    if (noteData) {
-      createNoteUI(noteData);
+    const allNotes = await loadAllNotes();
+    for (const [noteNumberStr, noteData] of Object.entries(allNotes)) {
+      const noteNumber = parseInt(noteNumberStr);
+      if (noteData) {
+        createNoteUI(noteNumber, noteData);
+      }
     }
   })();
 })();

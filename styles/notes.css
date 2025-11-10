@@ -1,4 +1,4 @@
-#hed-postit-note {
+.hed-postit-note {
   position: fixed;
   width: 250px;
   min-height: 100px;
@@ -14,24 +14,24 @@
   flex-direction: column;
 }
 
-#hed-postit-note.dragging {
+.hed-postit-note.dragging {
   cursor: grabbing;
   opacity: 0.8;
   user-select: none;
 }
 
-#hed-postit-note.folded {
+.hed-postit-note.folded {
   min-height: 0;
   height: 30px;
 }
 
-#hed-postit-note.folded .hed-note-content {
+.hed-postit-note.folded .hed-note-content {
   display: none;
 }
 
 /* REMOVED the following block which was hiding the controls:
 
-#hed-postit-note.folded .hed-note-controls {
+.hed-postit-note.folded .hed-note-controls {
   display: none;
 }
 
@@ -102,72 +102,72 @@
 /* ADD these classes to the end of notes.css */
 
 /* .y = yellow (default) */
-#hed-postit-note.hed-note-color-y {
+.hed-postit-note.hed-note-color-y {
   background: #fff8b4;
   border: 1px solid #ccc;
 }
-#hed-postit-note.hed-note-color-y .hed-note-header {
+.hed-postit-note.hed-note-color-y .hed-note-header {
   background: #fdf588;
   border-bottom: 1px solid #e6db74;
 }
-#hed-postit-note.hed-note-color-y .hed-note-header button:hover {
+.hed-postit-note.hed-note-color-y .hed-note-header button:hover {
   background: #e6db74;
 }
 
 /* .b = blue */
-#hed-postit-note.hed-note-color-b {
+.hed-postit-note.hed-note-color-b {
   background: #d4e8fd;
   border: 1px solid #abc;
 }
-#hed-postit-note.hed-note-color-b .hed-note-header {
+.hed-postit-note.hed-note-color-b .hed-note-header {
   background: #c0d9f7;
   border-bottom: 1px solid #a3c2e8;
 }
-#hed-postit-note.hed-note-color-b .hed-note-header button:hover {
+.hed-postit-note.hed-note-color-b .hed-note-header button:hover {
   background: #a3c2e8;
 }
 
 /* .g = green */
-#hed-postit-note.hed-note-color-g {
+.hed-postit-note.hed-note-color-g {
   background: #d9f8d9;
   border: 1px solid #adc;
 }
-#hed-postit-note.hed-note-color-g .hed-note-header {
+.hed-postit-note.hed-note-color-g .hed-note-header {
   background: #c3f0c3;
   border-bottom: 1px solid #a8dba8;
 }
-#hed-postit-note.hed-note-color-g .hed-note-header button:hover {
+.hed-postit-note.hed-note-color-g .hed-note-header button:hover {
   background: #a8dba8;
 }
 
 /* .r = red */
-#hed-postit-note.hed-note-color-r {
+.hed-postit-note.hed-note-color-r {
   background: #fdd4d4;
   border: 1px solid #cba;
 }
-#hed-postit-note.hed-note-color-r .hed-note-header {
+.hed-postit-note.hed-note-color-r .hed-note-header {
   background: #f7c0c0;
   border-bottom: 1px solid #e8a3a3;
 }
-#hed-postit-note.hed-note-color-r .hed-note-header button:hover {
+.hed-postit-note.hed-note-color-r .hed-note-header button:hover {
   background: #e8a3a3;
 }
 
 /* .t = translucent */
-#hed-postit-note.hed-note-color-t {
+.hed-postit-note.hed-note-color-t {
   background: #99999922;
   border: 1px solid rgba(200, 200, 200, 0.7);
   backdrop-filter: blur(5px);
   color: #b58900;
 }
-#hed-postit-note.hed-note-color-t .hed-note-header {
+.hed-postit-note.hed-note-color-t .hed-note-header {
   background: #99999922;
   border-bottom: 1px solid rgba(200, 200, 200, 0.5);
 }
-#hed-postit-note.hed-note-color-t .hed-note-header button:hover {
+.hed-postit-note.hed-note-color-t .hed-note-header button:hover {
   background: #99999922;
 }
-#hed-postit-note.hed-note-color-t .hed-note-content {
+.hed-postit-note.hed-note-color-t .hed-note-content {
   color: #b58900;
 }
 

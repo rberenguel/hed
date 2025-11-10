@@ -60,12 +60,26 @@
     return `hed-note:${window.location.href}`;
   };
 
-  async function loadNoteBuffer() {
+  let currentNoteNumber = 0; // Track which note we're editing
+
+  async function loadNoteBuffer(noteNumber) {
     const key = await getNoteKey();
     try {
       const data = await chrome.storage.local.get([key]);
-      if (data[key] && data[key].text) {
-        return data[key].text.split("\n");
+      let notesObject = data[key] || {};
+
+      // Migration: Check if this is old format (has 'text' property at root)
+      if (notesObject.text !== undefined) {
+        console.log("HED: Migrating old note format to new format");
+        // Old format - migrate to new format with note number 0
+        const oldNote = notesObject;
+        notesObject = { 0: oldNote };
+        // Save migrated data
+        await chrome.storage.local.set({ [key]: notesObject });
+      }
+
+      if (notesObject[noteNumber] && notesObject[noteNumber].text) {
+        return notesObject[noteNumber].text.split("\n");
       }
       return [""]; // Return empty buffer if no note
     } catch (e) {
@@ -73,16 +87,18 @@
     }
   }
 
-  async function saveNoteBuffer(buffer) {
+  async function saveNoteBuffer(noteNumber, buffer) {
     const key = await getNoteKey();
     const text = buffer.join("\n").trim();
 
     try {
-      // We must load existing data to preserve position/folded state and dates
+      // Load all notes
       const data = await chrome.storage.local.get([key]);
+      const notesObject = data[key] || {};
       const now = Date.now();
-      const noteData = data[key] || {
-        position: { x: 20, y: 20 },
+
+      const noteData = notesObject[noteNumber] || {
+        position: { x: 20 + (noteNumber * 30), y: 20 + (noteNumber * 30) },
         folded: false,
         createdAt: now,
       };
@@ -93,43 +109,57 @@
         noteData.createdAt = now;
       }
 
-      // Save or remove from storage
+      // Save or remove note
       if (text === "") {
-        await chrome.storage.local.remove(key);
+        delete notesObject[noteNumber];
+        // If no notes left, remove the key entirely
+        if (Object.keys(notesObject).length === 0) {
+          await chrome.storage.local.remove(key);
+        } else {
+          await chrome.storage.local.set({ [key]: notesObject });
+        }
       } else {
-        await chrome.storage.local.set({ [key]: noteData });
+        notesObject[noteNumber] = noteData;
+        await chrome.storage.local.set({ [key]: notesObject });
       }
 
       // Tell the notes.js UI to update itself
       if (window.hedNotes && window.hedNotes.createOrUpdateNote) {
-        window.hedNotes.createOrUpdateNote(text);
+        window.hedNotes.createOrUpdateNote(noteNumber, text);
       }
 
       return text === ""
-        ? "Note deleted."
-        : `Note saved. ${buffer.length} lines.`;
+        ? `Note ${noteNumber} deleted.`
+        : `Note ${noteNumber} saved. ${buffer.length} lines.`;
     } catch (e) {
       console.error("HED Error saving note:", e);
       return "Error saving note.";
     }
   }
 
-  async function _switchToNoteEditMode(inputElement, outputElement) {
+  async function _switchToNoteEditMode(inputElement, outputElement, noteNumber = 0) {
     sessionMode = "note-edit";
     activeElement = null; // No active element, we're editing the note
-    const noteBuffer = await loadNoteBuffer();
+    currentNoteNumber = noteNumber; // Store which note we're editing
+    const noteBuffer = await loadNoteBuffer(noteNumber);
     edInstance = new Ed(noteBuffer, { verboseErrors: true });
 
     const container = document.getElementById("rh-palette-container");
     if (container) {
       container.classList.add("is-editing-note");
     }
-    const msg =
-      noteBuffer.join("").trim() === ""
-        ? "New note"
-        : `Note loaded (${noteBuffer.length} lines)`;
-    renderOutput(outputElement, msg);
-    inputElement.placeholder = edInstance.getPrompt();
+
+    // If note is empty, automatically enter append mode
+    const isEmpty = noteBuffer.join("").trim() === "";
+    if (isEmpty) {
+      const result = edInstance.process("a");
+      renderOutput(outputElement, `New note [${noteNumber}] (append mode)`);
+      inputElement.placeholder = ""; // Clear placeholder in input mode
+    } else {
+      const msg = `Note [${noteNumber}] loaded (${noteBuffer.length} lines)`;
+      renderOutput(outputElement, msg);
+      inputElement.placeholder = edInstance.getPrompt();
+    }
   }
 
   async function createPalette() {
@@ -204,9 +234,14 @@
       const payload = {};
       let shouldBroadcast = false;
 
-      if (!edInstance.inputMode && command.trim().toLowerCase() === "e") {
-        await _switchToNoteEditMode(input, output);
-        return;
+      // Check for 'e' or 'e N' command
+      if (!edInstance.inputMode) {
+        const eMatch = command.trim().match(/^e(?:\s+(\d+))?$/i);
+        if (eMatch) {
+          const noteNumber = eMatch[1] ? parseInt(eMatch[1]) : 0;
+          await _switchToNoteEditMode(input, output, noteNumber);
+          return;
+        }
       }
 
       const result = edInstance.process(command);
@@ -259,10 +294,10 @@
         }
       } else if (result.buffer && command.trim().toLowerCase() === "w") {
         if (sessionMode === "note-edit") {
-          const saveMessage = await saveNoteBuffer(result.buffer);
+          const saveMessage = await saveNoteBuffer(currentNoteNumber, result.buffer);
           renderOutput(output, saveMessage);
           // Close immediately if deleted, otherwise after 1s
-          const closeDelay = saveMessage === "Note deleted." ? 500 : 1000;
+          const closeDelay = saveMessage.includes("deleted") ? 500 : 1000;
           setTimeout(closePalette, closeDelay);
           return;
         } else {
