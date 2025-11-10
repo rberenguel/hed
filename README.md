@@ -30,9 +30,15 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
   - > **Heads up**: Be cautious with patterns that can match empty strings (like `(a*)` or `(.*)?`), as live previewing them can sometimes affect page performance.
 
 - **Per-Page Notes**: Create and edit persistent, draggable "post-it" notes for any page.
-  - **ed Integration**: Use the `e` command to load the current page's note into the `ed` buffer. All standard commands (`a`, `d`, `s/old/new/g`, etc.) work as expected.
+  - **Multiple Notes**: Each page can have multiple numbered notes (0, 1, 2, etc.). Use `e` to edit note 0, `1e` to edit note 1, `2e` to edit note 2, and so on.
+  - **ed Integration**: Load notes into the `ed` buffer. All standard commands (`a`, `d`, `s/old/new/g`, etc.) work as expected.
   - **Saving**: The `w` command saves the buffer back to the page's note. Empty notes are automatically removed.
   - **URL Prefix Grouping**: Notes are saved per URL by default, but you can configure URL prefix grouping to share notes across multiple pages—perfect for single-page applications with client-side routing (like Google Chat or GitHub repositories).
+  - **Interactive Features**: Notes support special line types:
+    - `- [ ]` / `- [x]` → Interactive checkboxes
+    - `* text` → Clipboard copy button
+    - `- text` → Bulleted list items
+  - **Syntax Highlighting**: Code notes with solarized dark theme using Prism.js (supports C/C++, JavaScript, TypeScript, Python, Rust, Go, Java, Bash, JSON)
   - **Markdown Titles**: The first line of each note is treated as a title and supports color customization:
 
 ```markdown
@@ -43,6 +49,24 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
 # .r My Red Note (red)
 
 # .t My Translucent Note (translucent)
+
+# .scpp My C++ Code (solarized dark with C++ highlighting)
+
+# .sjs My JavaScript (solarized dark with JS highlighting)
+
+# .spy My Python Script (solarized dark with Python highlighting)
+
+# .srust My Rust Code (solarized dark with Rust highlighting)
+
+# .sgo My Go Program (solarized dark with Go highlighting)
+
+# .sjava My Java Class (solarized dark with Java highlighting)
+
+# .sbash My Shell Script (solarized dark with Bash highlighting)
+
+# .sts My TypeScript (solarized dark with TypeScript highlighting)
+
+# .sjson My JSON Data (solarized dark with JSON highlighting)
 
 # My Default Note (yellow)
 ```

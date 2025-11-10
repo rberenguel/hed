@@ -98,7 +98,7 @@
       const now = Date.now();
 
       const noteData = notesObject[noteNumber] || {
-        position: { x: 20 + (noteNumber * 30), y: 20 + (noteNumber * 30) },
+        position: { x: 20 + noteNumber * 30, y: 20 + noteNumber * 30 },
         folded: false,
         createdAt: now,
       };
@@ -137,7 +137,11 @@
     }
   }
 
-  async function _switchToNoteEditMode(inputElement, outputElement, noteNumber = 0) {
+  async function _switchToNoteEditMode(
+    inputElement,
+    outputElement,
+    noteNumber = 0,
+  ) {
     sessionMode = "note-edit";
     activeElement = null; // No active element, we're editing the note
     currentNoteNumber = noteNumber; // Store which note we're editing
@@ -234,9 +238,9 @@
       const payload = {};
       let shouldBroadcast = false;
 
-      // Check for 'e' or 'e N' command
+      // Check for 'e' or 'Ne' command (where N is a digit)
       if (!edInstance.inputMode) {
-        const eMatch = command.trim().match(/^e(?:\s+(\d+))?$/i);
+        const eMatch = command.trim().match(/^(\d*)e$/i);
         if (eMatch) {
           const noteNumber = eMatch[1] ? parseInt(eMatch[1]) : 0;
           await _switchToNoteEditMode(input, output, noteNumber);
@@ -294,7 +298,10 @@
         }
       } else if (result.buffer && command.trim().toLowerCase() === "w") {
         if (sessionMode === "note-edit") {
-          const saveMessage = await saveNoteBuffer(currentNoteNumber, result.buffer);
+          const saveMessage = await saveNoteBuffer(
+            currentNoteNumber,
+            result.buffer,
+          );
           renderOutput(output, saveMessage);
           // Close immediately if deleted, otherwise after 1s
           const closeDelay = saveMessage.includes("deleted") ? 500 : 1000;

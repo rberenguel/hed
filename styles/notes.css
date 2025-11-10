@@ -96,7 +96,7 @@
 }
 
 .hed-note-content:focus {
-  outline: 2px solid #007bff;
+  outline: none;
 }
 
 /* ADD these classes to the end of notes.css */
@@ -169,6 +169,64 @@
 }
 .hed-postit-note.hed-note-color-t .hed-note-content {
   color: #b58900;
+}
+
+/* .s = solarized dark (no highlighting, just dark background) */
+.hed-postit-note.hed-note-color-s,
+.hed-postit-note.hed-note-color-scpp,
+.hed-postit-note.hed-note-color-sjs,
+.hed-postit-note.hed-note-color-spy,
+.hed-postit-note.hed-note-color-srust,
+.hed-postit-note.hed-note-color-sgo,
+.hed-postit-note.hed-note-color-sjava,
+.hed-postit-note.hed-note-color-sbash,
+.hed-postit-note.hed-note-color-sts,
+.hed-postit-note.hed-note-color-sjson {
+  background: #002b36;
+  border: 1px solid #073642;
+  color: #839496;
+}
+
+.hed-postit-note.hed-note-color-s .hed-note-header,
+.hed-postit-note.hed-note-color-scpp .hed-note-header,
+.hed-postit-note.hed-note-color-sjs .hed-note-header,
+.hed-postit-note.hed-note-color-spy .hed-note-header,
+.hed-postit-note.hed-note-color-srust .hed-note-header,
+.hed-postit-note.hed-note-color-sgo .hed-note-header,
+.hed-postit-note.hed-note-color-sjava .hed-note-header,
+.hed-postit-note.hed-note-color-sbash .hed-note-header,
+.hed-postit-note.hed-note-color-sts .hed-note-header,
+.hed-postit-note.hed-note-color-sjson .hed-note-header {
+  background: #073642;
+  border-bottom: 1px solid #586e75;
+  color: #cb4b16;
+}
+
+.hed-postit-note.hed-note-color-s .hed-note-header button:hover,
+.hed-postit-note.hed-note-color-scpp .hed-note-header button:hover,
+.hed-postit-note.hed-note-color-sjs .hed-note-header button:hover,
+.hed-postit-note.hed-note-color-spy .hed-note-header button:hover,
+.hed-postit-note.hed-note-color-srust .hed-note-header button:hover,
+.hed-postit-note.hed-note-color-sgo .hed-note-header button:hover,
+.hed-postit-note.hed-note-color-sjava .hed-note-header button:hover,
+.hed-postit-note.hed-note-color-sbash .hed-note-header button:hover,
+.hed-postit-note.hed-note-color-sts .hed-note-header button:hover,
+.hed-postit-note.hed-note-color-sjson .hed-note-header button:hover {
+  background: #586e75;
+  color: #fdf6e3;
+}
+
+.hed-postit-note.hed-note-color-s .hed-note-content,
+.hed-postit-note.hed-note-color-scpp .hed-note-content,
+.hed-postit-note.hed-note-color-sjs .hed-note-content,
+.hed-postit-note.hed-note-color-spy .hed-note-content,
+.hed-postit-note.hed-note-color-srust .hed-note-content,
+.hed-postit-note.hed-note-color-sgo .hed-note-content,
+.hed-postit-note.hed-note-color-sjava .hed-note-content,
+.hed-postit-note.hed-note-color-sbash .hed-note-content,
+.hed-postit-note.hed-note-color-sts .hed-note-content,
+.hed-postit-note.hed-note-color-sjson .hed-note-content {
+  color: #839496;
 }
 
 /* List item styling */

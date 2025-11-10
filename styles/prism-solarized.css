@@ -1,0 +1,267 @@
+/* Prism Solarized Dark theme - scoped to .hed-note-color-s* notes only */
+
+.hed-note-color-s code[class*="language-"],
+.hed-note-color-s pre[class*="language-"],
+.hed-note-color-scpp code[class*="language-"],
+.hed-note-color-scpp pre[class*="language-"],
+.hed-note-color-sjs code[class*="language-"],
+.hed-note-color-sjs pre[class*="language-"],
+.hed-note-color-spy code[class*="language-"],
+.hed-note-color-spy pre[class*="language-"],
+.hed-note-color-srust code[class*="language-"],
+.hed-note-color-srust pre[class*="language-"],
+.hed-note-color-sgo code[class*="language-"],
+.hed-note-color-sgo pre[class*="language-"],
+.hed-note-color-sjava code[class*="language-"],
+.hed-note-color-sjava pre[class*="language-"],
+.hed-note-color-sbash code[class*="language-"],
+.hed-note-color-sbash pre[class*="language-"],
+.hed-note-color-sts code[class*="language-"],
+.hed-note-color-sts pre[class*="language-"],
+.hed-note-color-sjson code[class*="language-"],
+.hed-note-color-sjson pre[class*="language-"] {
+  color: #839496;
+  font-family:
+    "monoidregular", "Monoid", Consolas, Monaco, "Andale Mono", "Ubuntu Mono",
+    monospace;
+  font-size: 14px;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  line-height: 1.5;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+  tab-size: 4;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+}
+
+/* Selection */
+.hed-note-color-s code[class*="language-"]::-moz-selection,
+.hed-note-color-s pre[class*="language-"]::-moz-selection,
+.hed-note-color-scpp code[class*="language-"]::-moz-selection,
+.hed-note-color-scpp pre[class*="language-"]::-moz-selection,
+.hed-note-color-sjs code[class*="language-"]::-moz-selection,
+.hed-note-color-sjs pre[class*="language-"]::-moz-selection,
+.hed-note-color-spy code[class*="language-"]::-moz-selection,
+.hed-note-color-spy pre[class*="language-"]::-moz-selection,
+.hed-note-color-srust code[class*="language-"]::-moz-selection,
+.hed-note-color-srust pre[class*="language-"]::-moz-selection,
+.hed-note-color-sgo code[class*="language-"]::-moz-selection,
+.hed-note-color-sgo pre[class*="language-"]::-moz-selection,
+.hed-note-color-sjava code[class*="language-"]::-moz-selection,
+.hed-note-color-sjava pre[class*="language-"]::-moz-selection,
+.hed-note-color-sbash code[class*="language-"]::-moz-selection,
+.hed-note-color-sbash pre[class*="language-"]::-moz-selection,
+.hed-note-color-sts code[class*="language-"]::-moz-selection,
+.hed-note-color-sts pre[class*="language-"]::-moz-selection,
+.hed-note-color-sjson code[class*="language-"]::-moz-selection,
+.hed-note-color-sjson pre[class*="language-"]::-moz-selection {
+  background: #073642;
+}
+
+.hed-note-color-s code[class*="language-"]::selection,
+.hed-note-color-s pre[class*="language-"]::selection,
+.hed-note-color-scpp code[class*="language-"]::selection,
+.hed-note-color-scpp pre[class*="language-"]::selection,
+.hed-note-color-sjs code[class*="language-"]::selection,
+.hed-note-color-sjs pre[class*="language-"]::selection,
+.hed-note-color-spy code[class*="language-"]::selection,
+.hed-note-color-spy pre[class*="language-"]::selection,
+.hed-note-color-srust code[class*="language-"]::selection,
+.hed-note-color-srust pre[class*="language-"]::selection,
+.hed-note-color-sgo code[class*="language-"]::selection,
+.hed-note-color-sgo pre[class*="language-"]::selection,
+.hed-note-color-sjava code[class*="language-"]::selection,
+.hed-note-color-sjava pre[class*="language-"]::selection,
+.hed-note-color-sbash code[class*="language-"]::selection,
+.hed-note-color-sbash pre[class*="language-"]::selection,
+.hed-note-color-sts code[class*="language-"]::selection,
+.hed-note-color-sts pre[class*="language-"]::selection,
+.hed-note-color-sjson code[class*="language-"]::selection,
+.hed-note-color-sjson pre[class*="language-"]::selection {
+  background: #073642;
+}
+
+/* Tokens */
+.hed-note-color-s .token.comment,
+.hed-note-color-s .token.prolog,
+.hed-note-color-s .token.doctype,
+.hed-note-color-s .token.cdata,
+.hed-note-color-scpp .token.comment,
+.hed-note-color-scpp .token.prolog,
+.hed-note-color-scpp .token.doctype,
+.hed-note-color-scpp .token.cdata,
+.hed-note-color-sjs .token.comment,
+.hed-note-color-spy .token.comment,
+.hed-note-color-srust .token.comment,
+.hed-note-color-sgo .token.comment,
+.hed-note-color-sjava .token.comment,
+.hed-note-color-sbash .token.comment,
+.hed-note-color-sts .token.comment,
+.hed-note-color-sjson .token.comment {
+  color: #586e75;
+}
+
+.hed-note-color-s .token.punctuation,
+.hed-note-color-scpp .token.punctuation,
+.hed-note-color-sjs .token.punctuation,
+.hed-note-color-spy .token.punctuation,
+.hed-note-color-srust .token.punctuation,
+.hed-note-color-sgo .token.punctuation,
+.hed-note-color-sjava .token.punctuation,
+.hed-note-color-sbash .token.punctuation,
+.hed-note-color-sts .token.punctuation,
+.hed-note-color-sjson .token.punctuation {
+  color: #93a1a1;
+}
+
+.hed-note-color-s .token.property,
+.hed-note-color-s .token.tag,
+.hed-note-color-s .token.boolean,
+.hed-note-color-s .token.number,
+.hed-note-color-s .token.constant,
+.hed-note-color-s .token.symbol,
+.hed-note-color-s .token.deleted,
+.hed-note-color-scpp .token.property,
+.hed-note-color-scpp .token.tag,
+.hed-note-color-scpp .token.boolean,
+.hed-note-color-scpp .token.number,
+.hed-note-color-scpp .token.constant,
+.hed-note-color-scpp .token.symbol,
+.hed-note-color-scpp .token.deleted,
+.hed-note-color-sjs .token.property,
+.hed-note-color-sjs .token.tag,
+.hed-note-color-sjs .token.boolean,
+.hed-note-color-sjs .token.number,
+.hed-note-color-sjs .token.constant,
+.hed-note-color-sjs .token.symbol,
+.hed-note-color-sjs .token.deleted,
+.hed-note-color-spy .token.number,
+.hed-note-color-srust .token.number,
+.hed-note-color-sgo .token.number,
+.hed-note-color-sjava .token.number,
+.hed-note-color-sbash .token.number,
+.hed-note-color-sts .token.number,
+.hed-note-color-sjson .token.number {
+  color: #268bd2;
+}
+
+.hed-note-color-s .token.selector,
+.hed-note-color-s .token.attr-name,
+.hed-note-color-s .token.string,
+.hed-note-color-s .token.char,
+.hed-note-color-s .token.builtin,
+.hed-note-color-s .token.url,
+.hed-note-color-s .token.inserted,
+.hed-note-color-scpp .token.selector,
+.hed-note-color-scpp .token.attr-name,
+.hed-note-color-scpp .token.string,
+.hed-note-color-scpp .token.char,
+.hed-note-color-scpp .token.builtin,
+.hed-note-color-scpp .token.url,
+.hed-note-color-scpp .token.inserted,
+.hed-note-color-sjs .token.string,
+.hed-note-color-spy .token.string,
+.hed-note-color-srust .token.string,
+.hed-note-color-sgo .token.string,
+.hed-note-color-sjava .token.string,
+.hed-note-color-sbash .token.string,
+.hed-note-color-sts .token.string,
+.hed-note-color-sjson .token.string {
+  color: #2aa198;
+}
+
+.hed-note-color-s .token.atrule,
+.hed-note-color-s .token.attr-value,
+.hed-note-color-s .token.keyword,
+.hed-note-color-scpp .token.atrule,
+.hed-note-color-scpp .token.attr-value,
+.hed-note-color-scpp .token.keyword,
+.hed-note-color-sjs .token.keyword,
+.hed-note-color-spy .token.keyword,
+.hed-note-color-srust .token.keyword,
+.hed-note-color-sgo .token.keyword,
+.hed-note-color-sjava .token.keyword,
+.hed-note-color-sbash .token.keyword,
+.hed-note-color-sts .token.keyword,
+.hed-note-color-sjson .token.keyword {
+  color: #859900;
+}
+
+.hed-note-color-s .token.function,
+.hed-note-color-s .token.class-name,
+.hed-note-color-scpp .token.function,
+.hed-note-color-scpp .token.class-name,
+.hed-note-color-sjs .token.function,
+.hed-note-color-spy .token.function,
+.hed-note-color-srust .token.function,
+.hed-note-color-sgo .token.function,
+.hed-note-color-sjava .token.function,
+.hed-note-color-sbash .token.function,
+.hed-note-color-sts .token.function,
+.hed-note-color-sjson .token.function {
+  color: #b58900;
+}
+
+.hed-note-color-s .token.regex,
+.hed-note-color-s .token.important,
+.hed-note-color-s .token.variable,
+.hed-note-color-scpp .token.regex,
+.hed-note-color-scpp .token.important,
+.hed-note-color-scpp .token.variable,
+.hed-note-color-sjs .token.variable,
+.hed-note-color-spy .token.variable,
+.hed-note-color-srust .token.variable,
+.hed-note-color-sgo .token.variable,
+.hed-note-color-sjava .token.variable,
+.hed-note-color-sbash .token.variable,
+.hed-note-color-sts .token.variable,
+.hed-note-color-sjson .token.variable {
+  color: #cb4b16;
+}
+
+.hed-note-color-s .token.important,
+.hed-note-color-s .token.bold,
+.hed-note-color-scpp .token.important,
+.hed-note-color-scpp .token.bold,
+.hed-note-color-sjs .token.bold,
+.hed-note-color-spy .token.bold,
+.hed-note-color-srust .token.bold,
+.hed-note-color-sgo .token.bold,
+.hed-note-color-sjava .token.bold,
+.hed-note-color-sbash .token.bold,
+.hed-note-color-sts .token.bold,
+.hed-note-color-sjson .token.bold {
+  font-weight: bold;
+}
+
+.hed-note-color-s .token.italic,
+.hed-note-color-scpp .token.italic,
+.hed-note-color-sjs .token.italic,
+.hed-note-color-spy .token.italic,
+.hed-note-color-srust .token.italic,
+.hed-note-color-sgo .token.italic,
+.hed-note-color-sjava .token.italic,
+.hed-note-color-sbash .token.italic,
+.hed-note-color-sts .token.italic,
+.hed-note-color-sjson .token.italic {
+  font-style: italic;
+}
+
+.hed-note-color-s .token.entity,
+.hed-note-color-scpp .token.entity,
+.hed-note-color-sjs .token.entity,
+.hed-note-color-spy .token.entity,
+.hed-note-color-srust .token.entity,
+.hed-note-color-sgo .token.entity,
+.hed-note-color-sjava .token.entity,
+.hed-note-color-sbash .token.entity,
+.hed-note-color-sts .token.entity,
+.hed-note-color-sjson .token.entity {
+  cursor: help;
+}

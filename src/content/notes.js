@@ -23,16 +23,21 @@
   // Inline SVG icons from iconoir
   const ICONS = {
     copy: '<svg width="14" height="14" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19.4 20H9.6C9.26863 20 9 19.7314 9 19.4V9.6C9 9.26863 9.26863 9 9.6 9H19.4C19.7314 9 20 9.26863 20 9.6V19.4C20 19.7314 19.7314 20 19.4 20Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 9V4.6C15 4.26863 14.7314 4 14.4 4H4.6C4.26863 4 4 4.26863 4 4.6V14.4C4 14.7314 4.26863 15 4.6 15H9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    square: '<svg width="14" height="14" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 3.6V20.4C21 20.7314 20.7314 21 20.4 21H3.6C3.26863 21 3 20.7314 3 20.4V3.6C3 3.26863 3.26863 3 3.6 3H20.4C20.7314 3 21 3.26863 21 3.6Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    checkSquare: '<svg width="14" height="14" viewBox="0 0 24 24" stroke-width="1.5" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 20.4V3.6C3 3.26863 3.26863 3 3.6 3H20.4C20.7314 3 21 3.26863 21 3.6V20.4C21 20.7314 20.7314 21 20.4 21H3.6C3.26863 21 3 20.7314 3 20.4Z" stroke="currentColor" stroke-width="1.5"/><path d="M7 12.5L10 15.5L17 8.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    check:
+      '<svg width="14" height="14" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13L9 17L19 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    square:
+      '<svg width="14" height="14" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 3.6V20.4C21 20.7314 20.7314 21 20.4 21H3.6C3.26863 21 3 20.7314 3 20.4V3.6C3 3.26863 3.26863 3 3.6 3H20.4C20.7314 3 21 3.26863 21 3.6Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    checkSquare:
+      '<svg width="14" height="14" viewBox="0 0 24 24" stroke-width="1.5" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 20.4V3.6C3 3.26863 3.26863 3 3.6 3H20.4C20.7314 3 21 3.26863 21 3.6V20.4C21 20.7314 20.7314 21 20.4 21H3.6C3.26863 21 3 20.7314 3 20.4Z" stroke="currentColor" stroke-width="1.5"/><path d="M7 12.5L10 15.5L17 8.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   };
 
   /**
    * Renders the note body with special line types
    * @param {string} bodyText - The body text to render
    * @param {HTMLElement} container - The container element to render into
+   * @param {string|null} language - Optional language for syntax highlighting (e.g., "cpp", "js")
    */
-  function renderNoteBody(bodyText, container) {
+  function renderNoteBody(bodyText, container, language = null) {
     container.innerHTML = "";
     const lines = bodyText.split("\n");
 
@@ -55,7 +60,15 @@
         lineDiv.appendChild(iconSpan);
 
         const textSpan = document.createElement("span");
-        textSpan.textContent = text;
+        if (language && window.Prism && window.Prism.languages[language]) {
+          textSpan.innerHTML = Prism.highlight(
+            text,
+            Prism.languages[language],
+            language,
+          );
+        } else {
+          textSpan.textContent = text;
+        }
         lineDiv.appendChild(textSpan);
 
         lineDiv.addEventListener("click", handleCheckboxClick);
@@ -74,10 +87,20 @@
         lineDiv.appendChild(iconSpan);
 
         const textSpan = document.createElement("span");
-        textSpan.textContent = text;
+        if (language && window.Prism && window.Prism.languages[language]) {
+          textSpan.innerHTML = Prism.highlight(
+            text,
+            Prism.languages[language],
+            language,
+          );
+        } else {
+          textSpan.textContent = text;
+        }
         lineDiv.appendChild(textSpan);
 
-        lineDiv.addEventListener("click", () => handleCopyClick(text));
+        lineDiv.addEventListener("click", () =>
+          handleCopyClick(text, iconSpan),
+        );
         container.appendChild(lineDiv);
         return;
       }
@@ -86,13 +109,29 @@
       if (line.startsWith("- ")) {
         const text = line.substring(2);
         lineDiv.classList.add("hed-list-item");
-        lineDiv.textContent = text;
+        if (language && window.Prism && window.Prism.languages[language]) {
+          lineDiv.innerHTML = Prism.highlight(
+            text,
+            Prism.languages[language],
+            language,
+          );
+        } else {
+          lineDiv.textContent = text;
+        }
         container.appendChild(lineDiv);
         return;
       }
 
       // Regular line
-      lineDiv.textContent = line || "\u00A0"; // Non-breaking space for empty lines
+      if (language && window.Prism && window.Prism.languages[language]) {
+        lineDiv.innerHTML = Prism.highlight(
+          line || " ",
+          Prism.languages[language],
+          language,
+        );
+      } else {
+        lineDiv.textContent = line || "\u00A0"; // Non-breaking space for empty lines
+      }
       container.appendChild(lineDiv);
     });
   }
@@ -103,7 +142,7 @@
    * @returns {number|null}
    */
   function getNoteNumberFromElement(element) {
-    const noteUI = element.closest('.hed-postit-note');
+    const noteUI = element.closest(".hed-postit-note");
     if (noteUI && noteUI.dataset.noteNumber) {
       return parseInt(noteUI.dataset.noteNumber);
     }
@@ -137,7 +176,10 @@
     if (!noteState) return;
 
     // Update the stored text
-    const titleText = noteState.noteTitleSpan.textContent.replace(/^\[\d+\] /, '');
+    const titleText = noteState.noteTitleSpan.textContent.replace(
+      /^\[\d+\] /,
+      "",
+    );
     const fullText = buildNoteText(
       titleText,
       getBodyTextFromDOMForNote(noteNumber),
@@ -159,10 +201,19 @@
   /**
    * Handles copy click events
    * @param {string} text - The text to copy
+   * @param {HTMLElement} iconSpan - The icon element to update
    */
-  async function handleCopyClick(text) {
+  async function handleCopyClick(text, iconSpan) {
     try {
       await navigator.clipboard.writeText(text);
+
+      // Show checkmark feedback briefly
+      const originalIcon = iconSpan.innerHTML;
+      iconSpan.innerHTML = ICONS.check;
+
+      setTimeout(() => {
+        iconSpan.innerHTML = originalIcon;
+      }, 1000); // Show checkmark for 1 second
     } catch (err) {
       console.error("HED: Failed to copy text", err);
     }
@@ -178,7 +229,8 @@
     if (!noteState || !noteState.noteContent) return "";
 
     const lines = [];
-    const lineElements = noteState.noteContent.querySelectorAll(".hed-note-line");
+    const lineElements =
+      noteState.noteContent.querySelectorAll(".hed-note-line");
 
     lineElements.forEach((lineDiv) => {
       if (lineDiv.classList.contains("hed-checkbox-line")) {
@@ -208,24 +260,39 @@
   /**
    * Parses the full note text into its components.
    * @param {string} fullText
-   * @returns {{title: string, body: string, color: string}}
+   * @returns {{title: string, body: string, color: string, language: string|null}}
    */
   function parseNoteText(fullText) {
     if (!fullText || fullText.trim() === "") {
-      return { title: "", body: "", color: "y" };
+      return { title: "", body: "", color: "y", language: null };
     }
 
     const lines = fullText.split("\n");
     let title = "HED Note";
     let body = fullText;
     let color = "y"; // Default yellow
+    let language = null;
 
     if (lines[0].startsWith("#")) {
-      const titleMatch = lines[0].match(/^#\s*(?:\.([bygrt]))?\s*(.*)/);
+      // Match color codes including solarized with language: .s, .scpp, .sjs, .spy, etc.
+      const titleMatch = lines[0].match(
+        /^#\s*(?:\.([bygrt]|s(?:cpp|js|py|ts|rust|go|java|bash|json)?))?\s*(.*)/,
+      );
       if (titleMatch) {
-        // titleMatch[1] is the color code (b, y, g, r, t)
+        // titleMatch[1] is the color code (b, y, g, r, t, s, scpp, sjs, etc.)
         // titleMatch[2] is the title text
-        color = titleMatch[1] || "y";
+        const colorCode = titleMatch[1] || "y";
+        color = colorCode;
+
+        // Extract language from solarized color codes
+        if (colorCode.startsWith("s") && colorCode.length > 1) {
+          language = colorCode.substring(1); // "scpp" → "cpp", "sjs" → "js"
+          // Map "js" to "javascript" and "ts" to "typescript" and "py" to "python" for Prism
+          if (language === "js") language = "javascript";
+          if (language === "ts") language = "typescript";
+          if (language === "py") language = "python";
+        }
+
         title = titleMatch[2].trim() || "HED Note";
         body = lines.slice(1).join("\n");
       } else {
@@ -234,7 +301,7 @@
       }
     }
 
-    return { title, body, color };
+    return { title, body, color, language };
   }
 
   /**
@@ -286,7 +353,7 @@
         console.log("HED: Migrating old note format to new format");
         // Old format - migrate to new format with note number 0
         const migratedData = {
-          0: stored
+          0: stored,
         };
         // Save migrated data
         await chrome.storage.local.set({ [key]: migratedData });
@@ -344,7 +411,7 @@
     // Check if note already exists
     if (window.hedNotes.notes[noteNumber]) return; // Already exists
 
-    const { title, body, color } = parseNoteText(noteData.text);
+    const { title, body, color, language } = parseNoteText(noteData.text);
 
     // Do not create UI if there is no content
     if (noteData.text.trim() === "") {
@@ -395,7 +462,7 @@
 
     noteState.noteContent = document.createElement("div");
     noteState.noteContent.className = "hed-note-content";
-    renderNoteBody(body, noteState.noteContent);
+    renderNoteBody(body, noteState.noteContent, language);
 
     noteState.noteUI.appendChild(noteState.noteHeader);
     noteState.noteUI.appendChild(noteState.noteContent);
@@ -415,7 +482,7 @@
 
     document.addEventListener("mousemove", (e) => {
       if (!isDragging) return;
-      const draggingNote = document.querySelector('[data-dragging-note]');
+      const draggingNote = document.querySelector("[data-dragging-note]");
       if (draggingNote) {
         draggingNote.style.left = `${e.clientX - dragOffsetX}px`;
         draggingNote.style.top = `${e.clientY - dragOffsetY}px`;
@@ -424,7 +491,7 @@
 
     document.addEventListener("mouseup", (e) => {
       if (!isDragging) return;
-      const draggingNote = document.querySelector('[data-dragging-note]');
+      const draggingNote = document.querySelector("[data-dragging-note]");
       if (!draggingNote) return;
 
       isDragging = false;
@@ -434,7 +501,10 @@
 
       const draggedState = window.hedNotes.notes[draggedNoteNumber];
       if (draggedState) {
-        const titleText = draggedState.noteTitleSpan.textContent.replace(/^\[\d+\] /, ''); // Remove [N] prefix
+        const titleText = draggedState.noteTitleSpan.textContent.replace(
+          /^\[\d+\] /,
+          "",
+        ); // Remove [N] prefix
         const fullText = buildNoteText(
           titleText,
           getBodyTextFromDOMForNote(draggedNoteNumber),
@@ -461,7 +531,10 @@
         ? "Unfold"
         : "Fold";
 
-      const titleText = noteState.noteTitleSpan.textContent.replace(/^\[\d+\] /, ''); // Remove [N] prefix
+      const titleText = noteState.noteTitleSpan.textContent.replace(
+        /^\[\d+\] /,
+        "",
+      ); // Remove [N] prefix
       const fullText = buildNoteText(
         titleText,
         getBodyTextFromDOMForNote(noteNumber),
@@ -504,7 +577,7 @@
       return;
     }
 
-    const { title, body, color } = parseNoteText(fullText);
+    const { title, body, color, language } = parseNoteText(fullText);
 
     // If note doesn't exist, create it
     if (!window.hedNotes.notes[noteNumber]) {
@@ -514,7 +587,7 @@
           // Default position, offset by note number
           noteData = {
             text: fullText,
-            position: { x: 20 + (noteNumber * 30), y: 20 + (noteNumber * 30) },
+            position: { x: 20 + noteNumber * 30, y: 20 + noteNumber * 30 },
             folded: false,
           };
         } else {
@@ -527,9 +600,14 @@
 
     // If note exists, update it
     const noteState = window.hedNotes.notes[noteNumber];
-    if (noteState && noteState.noteTitleSpan && noteState.noteContent && noteState.noteUI) {
+    if (
+      noteState &&
+      noteState.noteTitleSpan &&
+      noteState.noteContent &&
+      noteState.noteUI
+    ) {
       noteState.noteTitleSpan.textContent = `[${noteNumber}] ${title}`;
-      renderNoteBody(body, noteState.noteContent);
+      renderNoteBody(body, noteState.noteContent, language);
 
       // Update color
       noteState.noteUI.dataset.color = color;

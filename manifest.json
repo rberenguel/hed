@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "hed",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Highlighting (and Javascript-ed) Ed.",
   "permissions": [
     "activeTab",
@@ -26,6 +26,17 @@
     {
       "matches": ["<all_urls>"],
       "js": [
+        "src/vendor/prism-core.min.js",
+        "src/vendor/prism-c.min.js",
+        "src/vendor/prism-cpp.min.js",
+        "src/vendor/prism-python.min.js",
+        "src/vendor/prism-javascript.min.js",
+        "src/vendor/prism-typescript.min.js",
+        "src/vendor/prism-bash.min.js",
+        "src/vendor/prism-go.min.js",
+        "src/vendor/prism-rust.min.js",
+        "src/vendor/prism-java.min.js",
+        "src/vendor/prism-json.min.js",
         "src/content/ed.js",
         "src/content/highlighter.js",
         "src/content/noteKeyUtils.js",
@@ -33,7 +44,13 @@
         "src/content/selector.js",
         "src/content/notes.js"
       ],
-      "css": ["styles/palette.css", "styles/highlights.css", "styles/notes.css", "fonts/monoid.css"],
+      "css": [
+        "styles/palette.css",
+        "styles/highlights.css",
+        "styles/notes.css",
+        "styles/prism-solarized.css",
+        "fonts/monoid.css"
+      ],
       "run_at": "document_idle",
       "all_frames": true
     }
