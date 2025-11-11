@@ -1,6 +1,7 @@
 .hed-postit-note {
   position: fixed;
-  width: 250px;
+  width: auto;
+  max-width: 25%;
   min-height: 100px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   z-index: 99999990;
@@ -93,6 +94,22 @@
     "Monoid Nerd Font", "Roboto", monospace !important;
   user-select: text;
   cursor: text;
+}
+
+/* Code notes (with syntax highlighting) should not wrap */
+.hed-postit-note.hed-note-color-scpp .hed-note-content,
+.hed-postit-note.hed-note-color-sjs .hed-note-content,
+.hed-postit-note.hed-note-color-spy .hed-note-content,
+.hed-postit-note.hed-note-color-srust .hed-note-content,
+.hed-postit-note.hed-note-color-sgo .hed-note-content,
+.hed-postit-note.hed-note-color-sjava .hed-note-content,
+.hed-postit-note.hed-note-color-sbash .hed-note-content,
+.hed-postit-note.hed-note-color-sts .hed-note-content,
+.hed-postit-note.hed-note-color-sjson .hed-note-content {
+  white-space: pre;
+  overflow-x: hidden;
+  text-overflow: clip;
+  word-wrap: normal;
 }
 
 .hed-note-content:focus {
@@ -296,4 +313,170 @@
 .hed-note-line.hed-checkbox-line[data-checked="true"] span:last-child {
   text-decoration: line-through;
   opacity: 0.6;
+}
+
+/* Scrollbar styling for all notes */
+.hed-note-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.hed-note-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.hed-note-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.hed-note-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Yellow note scrollbars */
+.hed-postit-note.hed-note-color-y .hed-note-content::-webkit-scrollbar-track {
+  background: rgba(230, 219, 116, 0.3);
+}
+
+.hed-postit-note.hed-note-color-y .hed-note-content::-webkit-scrollbar-thumb {
+  background: rgba(230, 219, 116, 0.6);
+}
+
+.hed-postit-note.hed-note-color-y
+  .hed-note-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(230, 219, 116, 0.8);
+}
+
+/* Blue note scrollbars */
+.hed-postit-note.hed-note-color-b .hed-note-content::-webkit-scrollbar-track {
+  background: rgba(163, 194, 232, 0.3);
+}
+
+.hed-postit-note.hed-note-color-b .hed-note-content::-webkit-scrollbar-thumb {
+  background: rgba(163, 194, 232, 0.6);
+}
+
+.hed-postit-note.hed-note-color-b
+  .hed-note-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(163, 194, 232, 0.8);
+}
+
+/* Green note scrollbars */
+.hed-postit-note.hed-note-color-g .hed-note-content::-webkit-scrollbar-track {
+  background: rgba(168, 219, 168, 0.3);
+}
+
+.hed-postit-note.hed-note-color-g .hed-note-content::-webkit-scrollbar-thumb {
+  background: rgba(168, 219, 168, 0.6);
+}
+
+.hed-postit-note.hed-note-color-g
+  .hed-note-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 219, 168, 0.8);
+}
+
+/* Red note scrollbars */
+.hed-postit-note.hed-note-color-r .hed-note-content::-webkit-scrollbar-track {
+  background: rgba(232, 163, 163, 0.3);
+}
+
+.hed-postit-note.hed-note-color-r .hed-note-content::-webkit-scrollbar-thumb {
+  background: rgba(232, 163, 163, 0.6);
+}
+
+.hed-postit-note.hed-note-color-r
+  .hed-note-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(232, 163, 163, 0.8);
+}
+
+/* Translucent note scrollbars */
+.hed-postit-note.hed-note-color-t .hed-note-content::-webkit-scrollbar-track {
+  background: rgba(200, 200, 200, 0.2);
+}
+
+.hed-postit-note.hed-note-color-t .hed-note-content::-webkit-scrollbar-thumb {
+  background: rgba(200, 200, 200, 0.4);
+}
+
+.hed-postit-note.hed-note-color-t
+  .hed-note-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(200, 200, 200, 0.6);
+}
+
+/* Solarized dark note scrollbars */
+.hed-postit-note.hed-note-color-s .hed-note-content::-webkit-scrollbar-track,
+.hed-postit-note.hed-note-color-scpp .hed-note-content::-webkit-scrollbar-track,
+.hed-postit-note.hed-note-color-sjs .hed-note-content::-webkit-scrollbar-track,
+.hed-postit-note.hed-note-color-spy .hed-note-content::-webkit-scrollbar-track,
+.hed-postit-note.hed-note-color-srust
+  .hed-note-content::-webkit-scrollbar-track,
+.hed-postit-note.hed-note-color-sgo .hed-note-content::-webkit-scrollbar-track,
+.hed-postit-note.hed-note-color-sjava
+  .hed-note-content::-webkit-scrollbar-track,
+.hed-postit-note.hed-note-color-sbash
+  .hed-note-content::-webkit-scrollbar-track,
+.hed-postit-note.hed-note-color-sts .hed-note-content::-webkit-scrollbar-track,
+.hed-postit-note.hed-note-color-sjson
+  .hed-note-content::-webkit-scrollbar-track {
+  background: rgba(7, 54, 66, 0.5);
+}
+
+.hed-postit-note.hed-note-color-s .hed-note-content::-webkit-scrollbar-thumb,
+.hed-postit-note.hed-note-color-scpp .hed-note-content::-webkit-scrollbar-thumb,
+.hed-postit-note.hed-note-color-sjs .hed-note-content::-webkit-scrollbar-thumb,
+.hed-postit-note.hed-note-color-spy .hed-note-content::-webkit-scrollbar-thumb,
+.hed-postit-note.hed-note-color-srust
+  .hed-note-content::-webkit-scrollbar-thumb,
+.hed-postit-note.hed-note-color-sgo .hed-note-content::-webkit-scrollbar-thumb,
+.hed-postit-note.hed-note-color-sjava
+  .hed-note-content::-webkit-scrollbar-thumb,
+.hed-postit-note.hed-note-color-sbash
+  .hed-note-content::-webkit-scrollbar-thumb,
+.hed-postit-note.hed-note-color-sts .hed-note-content::-webkit-scrollbar-thumb,
+.hed-postit-note.hed-note-color-sjson
+  .hed-note-content::-webkit-scrollbar-thumb {
+  background: rgba(88, 110, 117, 0.6);
+}
+
+.hed-postit-note.hed-note-color-s
+  .hed-note-content::-webkit-scrollbar-thumb:hover,
+.hed-postit-note.hed-note-color-scpp
+  .hed-note-content::-webkit-scrollbar-thumb:hover,
+.hed-postit-note.hed-note-color-sjs
+  .hed-note-content::-webkit-scrollbar-thumb:hover,
+.hed-postit-note.hed-note-color-spy
+  .hed-note-content::-webkit-scrollbar-thumb:hover,
+.hed-postit-note.hed-note-color-srust
+  .hed-note-content::-webkit-scrollbar-thumb:hover,
+.hed-postit-note.hed-note-color-sgo
+  .hed-note-content::-webkit-scrollbar-thumb:hover,
+.hed-postit-note.hed-note-color-sjava
+  .hed-note-content::-webkit-scrollbar-thumb:hover,
+.hed-postit-note.hed-note-color-sbash
+  .hed-note-content::-webkit-scrollbar-thumb:hover,
+.hed-postit-note.hed-note-color-sts
+  .hed-note-content::-webkit-scrollbar-thumb:hover,
+.hed-postit-note.hed-note-color-sjson
+  .hed-note-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(88, 110, 117, 0.8);
+}
+
+/* Prevent highlights from affecting note content */
+.hed-note-content .rh-highlight-span,
+.hed-note-content .rh-highlight-g0,
+.hed-note-content .rh-highlight-g1,
+.hed-note-content .rh-highlight-g2,
+.hed-note-content .rh-highlight-g3,
+.hed-note-content .rh-highlight-g4,
+.hed-note-content .rh-highlight-g5,
+.hed-note-content .rh-highlight-g6 {
+  background-color: inherit !important;
+  color: inherit !important;
+  text-shadow: inherit !important;
+  border-radius: inherit !important;
+  padding: inherit !important;
+  margin: inherit !important;
+  backdrop-filter: none !important;
 }
