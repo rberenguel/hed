@@ -1,6 +1,7 @@
 (() => {
   const HIGHLIGHT_CLASS = "rh-highlight-span";
-  let lastRegexString = null;
+  let lastRegexString = null; // Keep for backward compatibility
+  let activeHighlights = new Map(); // id -> { regexString }
   let observer = null;
   let debounceTimer = null;
 
@@ -37,6 +38,109 @@
     return { startNodeInfo, endNodeInfo };
   }
 
+  // Helper to unwrap a single span
+  function unwrapSpan(span) {
+    const parent = span.parentNode;
+    if (!parent) return;
+    while (span.firstChild) {
+      parent.insertBefore(span.firstChild, span);
+    }
+    parent.removeChild(span);
+    parent.normalize();
+  }
+
+  // Apply highlights for a specific ID
+  function applyHighlightById(id, regexString) {
+    if (!regexString) return;
+
+    // Store in activeHighlights map
+    activeHighlights.set(id, { regexString });
+
+    // Remove existing highlights for this ID
+    removeHighlightById(id, false);
+
+    const rootElement = document.body;
+    let regex;
+    try {
+      regex = new RegExp(regexString, "gd");
+    } catch (e) {
+      // Silently ignore invalid regex
+      return;
+    }
+
+    const { fullText, nodeMap } = createTextMap(rootElement);
+    if (!fullText) return;
+
+    const matches = [...fullText.matchAll(regex)];
+
+    for (const match of matches.reverse()) {
+      for (let i = match.indices.length - 1; i > 0; i--) {
+        const group = match.indices[i];
+        if (!group) continue;
+
+        try {
+          const [start, end] = group;
+          const { startNodeInfo, endNodeInfo } = findDomRange(
+            nodeMap,
+            start,
+            end,
+          );
+
+          if (
+            startNodeInfo &&
+            endNodeInfo &&
+            startNodeInfo.node.isConnected &&
+            endNodeInfo.node.isConnected
+          ) {
+            const range = document.createRange();
+            range.setStart(startNodeInfo.node, startNodeInfo.offset);
+            range.setEnd(endNodeInfo.node, endNodeInfo.offset);
+
+            const span = document.createElement("span");
+            span.className = `${HIGHLIGHT_CLASS} rh-highlight-g${i}`;
+            span.dataset.highlightId = id; // Add ID attribute
+
+            const fragment = range.extractContents();
+            span.appendChild(fragment);
+            range.insertNode(span);
+          }
+        } catch (e) {
+          console.warn(
+            "Could not highlight a match, likely due to dynamic page content.",
+            { match, error: e },
+          );
+        }
+      }
+    }
+  }
+
+  // Remove highlights for a specific ID
+  function removeHighlightById(id, removeFromMap = true) {
+    document
+      .querySelectorAll(`.${HIGHLIGHT_CLASS}[data-highlight-id="${id}"]`)
+      .forEach(unwrapSpan);
+
+    if (removeFromMap) {
+      activeHighlights.delete(id);
+    }
+  }
+
+  // Re-apply all active highlights (for MutationObserver)
+  function reapplyAllHighlights() {
+    if (observer) observer.disconnect();
+
+    // Clear all highlight spans
+    document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach(unwrapSpan);
+
+    // Re-apply each active pattern
+    activeHighlights.forEach((data, id) => {
+      applyHighlightById(id, data.regexString);
+    });
+
+    startObserver();
+  }
+
+  // Backward compatibility: apply single highlight (for live preview)
   function applyHighlights(regexString) {
     lastRegexString = regexString; // Store the regex for re-application
     if (!lastRegexString) return;
@@ -101,15 +205,7 @@
   }
 
   function removeHighlights(stopObserving = true) {
-    document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach((span) => {
-      const parent = span.parentNode;
-      if (!parent) return;
-      while (span.firstChild) {
-        parent.insertBefore(span.firstChild, span);
-      }
-      parent.removeChild(span);
-      parent.normalize();
-    });
+    document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach(unwrapSpan);
     if (stopObserving) {
       lastRegexString = null;
       stopObserver();
@@ -130,7 +226,12 @@
     observer = new MutationObserver(() => {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
-        if (lastRegexString) {
+        // If we have multi-highlights active, reapply all
+        if (activeHighlights.size > 0) {
+          reapplyAllHighlights();
+        }
+        // Otherwise use backward-compatible single highlight
+        else if (lastRegexString) {
           applyHighlights(lastRegexString);
         }
       }, 500); // Debounce for 500ms
@@ -152,6 +253,32 @@
   }
 
   window.regexHighlighter = {
+    // New multi-highlight API
+    applyById: (id, regexString) => {
+      applyHighlightById(id, regexString);
+      startObserver();
+    },
+    removeById: (id) => {
+      removeHighlightById(id, true);
+      if (activeHighlights.size === 0) {
+        stopObserver();
+      }
+    },
+    toggleById: (id, regexString) => {
+      if (activeHighlights.has(id)) {
+        removeHighlightById(id, true);
+        if (activeHighlights.size === 0) {
+          stopObserver();
+        }
+        return false; // Now off
+      } else {
+        applyHighlightById(id, regexString);
+        startObserver();
+        return true; // Now on
+      }
+    },
+    isActive: (id) => activeHighlights.has(id),
+    // Backward compatibility for live preview
     apply: applyHighlights,
     remove: removeHighlights,
   };

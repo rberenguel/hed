@@ -47,3 +47,131 @@
   color: #fff;
   text-shadow: 0 0 3px #000;
 }
+
+/* Pattern-specific colors via data-highlight-id */
+/* Each pattern ID rotates the color palette so g1 has different color per pattern */
+
+/* Pattern 0: Default palette (Blue, Green, Orange, Cyan, Magenta, Violet) */
+.rh-highlight-span[data-highlight-id="0"].rh-highlight-g1 {
+  background-color: rgba(38, 139, 210, 0.6) !important; /* Blue */
+}
+.rh-highlight-span[data-highlight-id="0"].rh-highlight-g2 {
+  background-color: rgba(133, 153, 0, 0.6) !important; /* Green */
+}
+.rh-highlight-span[data-highlight-id="0"].rh-highlight-g3 {
+  background-color: rgba(203, 75, 22, 0.6) !important; /* Orange */
+}
+.rh-highlight-span[data-highlight-id="0"].rh-highlight-g4 {
+  background-color: rgba(42, 161, 152, 0.6) !important; /* Cyan */
+}
+.rh-highlight-span[data-highlight-id="0"].rh-highlight-g5 {
+  background-color: rgba(211, 54, 130, 0.6) !important; /* Magenta */
+}
+.rh-highlight-span[data-highlight-id="0"].rh-highlight-g6 {
+  background-color: rgba(108, 113, 196, 0.6) !important; /* Violet */
+}
+
+/* Pattern 1: Rotate by 1 (Green, Orange, Cyan, Magenta, Violet, Blue) */
+.rh-highlight-span[data-highlight-id="1"].rh-highlight-g1 {
+  background-color: rgba(133, 153, 0, 0.6) !important; /* Green */
+}
+.rh-highlight-span[data-highlight-id="1"].rh-highlight-g2 {
+  background-color: rgba(203, 75, 22, 0.6) !important; /* Orange */
+}
+.rh-highlight-span[data-highlight-id="1"].rh-highlight-g3 {
+  background-color: rgba(42, 161, 152, 0.6) !important; /* Cyan */
+}
+.rh-highlight-span[data-highlight-id="1"].rh-highlight-g4 {
+  background-color: rgba(211, 54, 130, 0.6) !important; /* Magenta */
+}
+.rh-highlight-span[data-highlight-id="1"].rh-highlight-g5 {
+  background-color: rgba(108, 113, 196, 0.6) !important; /* Violet */
+}
+.rh-highlight-span[data-highlight-id="1"].rh-highlight-g6 {
+  background-color: rgba(38, 139, 210, 0.6) !important; /* Blue */
+}
+
+/* Pattern 2: Rotate by 2 (Orange, Cyan, Magenta, Violet, Blue, Green) */
+.rh-highlight-span[data-highlight-id="2"].rh-highlight-g1 {
+  background-color: rgba(203, 75, 22, 0.6) !important; /* Orange */
+}
+.rh-highlight-span[data-highlight-id="2"].rh-highlight-g2 {
+  background-color: rgba(42, 161, 152, 0.6) !important; /* Cyan */
+}
+.rh-highlight-span[data-highlight-id="2"].rh-highlight-g3 {
+  background-color: rgba(211, 54, 130, 0.6) !important; /* Magenta */
+}
+.rh-highlight-span[data-highlight-id="2"].rh-highlight-g4 {
+  background-color: rgba(108, 113, 196, 0.6) !important; /* Violet */
+}
+.rh-highlight-span[data-highlight-id="2"].rh-highlight-g5 {
+  background-color: rgba(38, 139, 210, 0.6) !important; /* Blue */
+}
+.rh-highlight-span[data-highlight-id="2"].rh-highlight-g6 {
+  background-color: rgba(133, 153, 0, 0.6) !important; /* Green */
+}
+
+/* Pattern 3: Rotate by 3 (Cyan, Magenta, Violet, Blue, Green, Orange) */
+.rh-highlight-span[data-highlight-id="3"].rh-highlight-g1 {
+  background-color: rgba(42, 161, 152, 0.6) !important; /* Cyan */
+}
+.rh-highlight-span[data-highlight-id="3"].rh-highlight-g2 {
+  background-color: rgba(211, 54, 130, 0.6) !important; /* Magenta */
+}
+.rh-highlight-span[data-highlight-id="3"].rh-highlight-g3 {
+  background-color: rgba(108, 113, 196, 0.6) !important; /* Violet */
+}
+.rh-highlight-span[data-highlight-id="3"].rh-highlight-g4 {
+  background-color: rgba(38, 139, 210, 0.6) !important; /* Blue */
+}
+.rh-highlight-span[data-highlight-id="3"].rh-highlight-g5 {
+  background-color: rgba(133, 153, 0, 0.6) !important; /* Green */
+}
+.rh-highlight-span[data-highlight-id="3"].rh-highlight-g6 {
+  background-color: rgba(203, 75, 22, 0.6) !important; /* Orange */
+}
+
+/* Pattern 4: Rotate by 4 (Magenta, Violet, Blue, Green, Orange, Cyan) */
+.rh-highlight-span[data-highlight-id="4"].rh-highlight-g1 {
+  background-color: rgba(211, 54, 130, 0.6) !important; /* Magenta */
+}
+.rh-highlight-span[data-highlight-id="4"].rh-highlight-g2 {
+  background-color: rgba(108, 113, 196, 0.6) !important; /* Violet */
+}
+.rh-highlight-span[data-highlight-id="4"].rh-highlight-g3 {
+  background-color: rgba(38, 139, 210, 0.6) !important; /* Blue */
+}
+.rh-highlight-span[data-highlight-id="4"].rh-highlight-g4 {
+  background-color: rgba(133, 153, 0, 0.6) !important; /* Green */
+}
+.rh-highlight-span[data-highlight-id="4"].rh-highlight-g5 {
+  background-color: rgba(203, 75, 22, 0.6) !important; /* Orange */
+}
+.rh-highlight-span[data-highlight-id="4"].rh-highlight-g6 {
+  background-color: rgba(42, 161, 152, 0.6) !important; /* Cyan */
+}
+
+/* Pattern 5: Rotate by 5 (Violet, Blue, Green, Orange, Cyan, Magenta) */
+.rh-highlight-span[data-highlight-id="5"].rh-highlight-g1 {
+  background-color: rgba(108, 113, 196, 0.6) !important; /* Violet */
+}
+.rh-highlight-span[data-highlight-id="5"].rh-highlight-g2 {
+  background-color: rgba(38, 139, 210, 0.6) !important; /* Blue */
+}
+.rh-highlight-span[data-highlight-id="5"].rh-highlight-g3 {
+  background-color: rgba(133, 153, 0, 0.6) !important; /* Green */
+}
+.rh-highlight-span[data-highlight-id="5"].rh-highlight-g4 {
+  background-color: rgba(203, 75, 22, 0.6) !important; /* Orange */
+}
+.rh-highlight-span[data-highlight-id="5"].rh-highlight-g5 {
+  background-color: rgba(42, 161, 152, 0.6) !important; /* Cyan */
+}
+.rh-highlight-span[data-highlight-id="5"].rh-highlight-g6 {
+  background-color: rgba(211, 54, 130, 0.6) !important; /* Magenta */
+}
+
+/* Pattern 6+: Wraps back to default palette */
+.rh-highlight-span[data-highlight-id="6"].rh-highlight-g1 {
+  background-color: rgba(38, 139, 210, 0.6) !important; /* Blue */
+}

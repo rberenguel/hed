@@ -166,6 +166,33 @@
     }
   }
 
+  async function _switchToHighlightEditMode(inputElement, outputElement) {
+    sessionMode = "highlight-edit";
+    activeElement = null;
+
+    const patterns = await window.hedHighlightPatterns.loadPatterns();
+    const buffer = patterns.length > 0 ? patterns : [""];
+    edInstance = new Ed(buffer, { verboseErrors: true });
+
+    const container = document.getElementById("rh-palette-container");
+    if (container) {
+      container.classList.add("is-editing-highlights");
+    }
+
+    const isEmpty = buffer.join("").trim() === "";
+    if (isEmpty) {
+      edInstance.process("a");
+      renderOutput(outputElement, "Highlight patterns (append mode)");
+      inputElement.placeholder = "";
+    } else {
+      renderOutput(
+        outputElement,
+        `Highlight patterns (${buffer.length} patterns)`,
+      );
+      inputElement.placeholder = edInstance.getPrompt();
+    }
+  }
+
   async function createPalette() {
     if (document.getElementById(PALETTE_ID)) {
       return;
@@ -246,6 +273,29 @@
           await _switchToNoteEditMode(input, output, noteNumber);
           return;
         }
+
+        // Check for 'e H' command (edit highlight patterns)
+        if (command.trim().match(/^e\s+H$/i)) {
+          await _switchToHighlightEditMode(input, output);
+          return;
+        }
+
+        // Check for '1H', '2H', etc. (toggle pattern) - space optional
+        const toggleMatch = command.trim().match(/^(\d+)\s*H$/i);
+        if (toggleMatch) {
+          const patternId = parseInt(toggleMatch[1]);
+          const result = await window.hedHighlightPatterns.togglePattern(
+            patternId,
+          );
+
+          if (result.error) {
+            renderOutput(output, result.error);
+          } else {
+            renderOutput(output, result.message);
+            setTimeout(closePalette, 800);
+          }
+          return;
+        }
       }
 
       const result = edInstance.process(command);
@@ -297,7 +347,13 @@
           return;
         }
       } else if (result.buffer && command.trim().toLowerCase() === "w") {
-        if (sessionMode === "note-edit") {
+        if (sessionMode === "highlight-edit") {
+          await window.hedHighlightPatterns.savePatterns(result.buffer);
+          const nonEmpty = result.buffer.filter((p) => p.trim() !== "").length;
+          renderOutput(output, `Saved ${nonEmpty} patterns`);
+          setTimeout(closePalette, 1000);
+          return;
+        } else if (sessionMode === "note-edit") {
           const saveMessage = await saveNoteBuffer(
             currentNoteNumber,
             result.buffer,

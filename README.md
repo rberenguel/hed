@@ -22,6 +22,15 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
   - **Capture Group Colors**: Each capture group is assigned a different color, allowing for sophisticated text analysis. For example, `` `/(lorem)|(ipsum)/H` `` will highlight "lorem" and "ipsum" with unique styles.
   - **Robust & Styled**: The highlighter works seamlessly across complex HTML elements and uses high-contrast styling for readability.
 
+- **Stored Highlight Patterns**: Create a reusable library of regex patterns that can be toggled on/off per page.
+
+  - **Pattern Library**: Use `e H` to edit your global highlight patterns file with standard `ed` commands. Each line is a separate regex pattern.
+  - **Toggle Highlights**: Activate pattern 0 with `0H`, pattern 1 with `1H`, etc. Run the same command again to toggle off.
+  - **Auto-Reapply**: Active highlights automatically reapply when you reload the page.
+  - **Per-Page State**: Each page remembers which patterns are active independently.
+  - **Color Rotation**: Each pattern ID gets a unique color (pattern 0 = blue, pattern 1 = green, pattern 2 = orange, etc.) making it easy to distinguish multiple active patterns.
+  - **Perfect for Common Terms**: Store patterns for your name, project-specific terms, error keywords, or any text you frequently search for across different pages.
+
 - **Regex-based Selection**: With the `` `/your-regex/S` `` command, you can select and copy text from the page.
 
   - **Capture Group Extraction**: It finds all matches for your regex and copies the content of the capture groups to your clipboard.

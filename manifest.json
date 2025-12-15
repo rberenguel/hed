@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "hed",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Highlighting (and Javascript-ed) Ed.",
   "permissions": [
     "activeTab",
@@ -39,6 +39,7 @@
         "src/vendor/prism-json.min.js",
         "src/content/ed.js",
         "src/content/highlighter.js",
+        "src/content/highlightPatterns.js",
         "src/content/noteKeyUtils.js",
         "src/content/palette.js",
         "src/content/selector.js",

@@ -32,6 +32,9 @@
 #rh-palette-container.is-editing-note {
   border-color: #fff8b4;
 }
+#rh-palette-container.is-editing-highlights {
+  border-color: rgba(203, 75, 22, 0.8); /* Orange border */
+}
 /* --- END NEW --- */
 
 /* The output area is completely hidden by default */
