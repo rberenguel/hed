@@ -38,13 +38,17 @@
     document.getElementById(PALETTE_ID)?.remove();
   }
 
-  function renderOutput(outputElement, text) {
+  function renderOutput(outputElement, text, isHTML = false) {
     const container = document.getElementById("rh-palette-container");
     if (!container) return;
 
     if (text) {
       container.classList.add("is-showing-output");
-      outputElement.textContent = text;
+      if (isHTML) {
+        outputElement.innerHTML = text;
+      } else {
+        outputElement.textContent = text;
+      }
       outputElement.scrollTop = outputElement.scrollHeight;
     } else {
       container.classList.remove("is-showing-output");
@@ -166,6 +170,30 @@
     }
   }
 
+  async function _switchToClipboardEditMode(inputElement, outputElement) {
+    sessionMode = "clipboard-edit";
+    activeElement = null;
+
+    let clipboardBuffer = [];
+    try {
+      clipboardBuffer = (await navigator.clipboard.readText()).split("\n");
+    } catch (e) {
+      clipboardBuffer = ["Error reading clipboard."];
+    }
+
+    edInstance = new Ed(clipboardBuffer, { verboseErrors: true });
+
+    const container = document.getElementById("rh-palette-container");
+    if (container) {
+      container.classList.remove("is-editing-note");
+      container.classList.remove("is-editing-highlights");
+    }
+
+    const msg = `Clipboard loaded (${clipboardBuffer.length} lines)`;
+    renderOutput(outputElement, msg);
+    inputElement.placeholder = edInstance.getPrompt();
+  }
+
   async function _switchToHighlightEditMode(inputElement, outputElement) {
     sessionMode = "highlight-edit";
     activeElement = null;
@@ -264,6 +292,22 @@
     const processAndRender = async (command) => {
       const payload = {};
       let shouldBroadcast = false;
+
+      // Check for help command
+      if (!edInstance.inputMode && command.trim() === "?") {
+        if (window.hedHelp && window.hedHelp.getHelpHTML) {
+          renderOutput(output, window.hedHelp.getHelpHTML(), true);
+        } else {
+          renderOutput(output, "Help not available");
+        }
+        return;
+      }
+
+      // Check for 'ce' command (edit clipboard)
+      if (!edInstance.inputMode && command.trim().match(/^ce$/i)) {
+        await _switchToClipboardEditMode(input, output);
+        return;
+      }
 
       // Check for 'e' or 'Ne' command (where N is a digit)
       if (!edInstance.inputMode) {

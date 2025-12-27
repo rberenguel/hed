@@ -39,7 +39,7 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
   - > **Heads up**: Be cautious with patterns that can match empty strings (like `(a*)` or `(.*)?`), as live previewing them can sometimes affect page performance.
 
 - **Per-Page Notes**: Create and edit persistent, draggable "post-it" notes for any page.
-  - **Multiple Notes**: Each page can have multiple numbered notes (0, 1, 2, etc.). Use `e` to edit note 0, `1e` to edit note 1, `2e` to edit note 2, and so on.
+  - **Multiple Notes**: Each page can have multiple numbered notes (0, 1, 2, etc.). Use `e` to edit note 0, `1e` to edit note 1, `2e` to edit note 2, and so on. Use `ce` to edit clipboard.
   - **ed Integration**: Load notes into the `ed` buffer. All standard commands (`a`, `d`, `s/old/new/g`, etc.) work as expected.
   - **Saving**: The `w` command saves the buffer back to the page's note. Empty notes are automatically removed.
   - **URL Prefix Grouping**: Notes are saved per URL by default, but you can configure URL prefix grouping to share notes across multiple pages—perfect for single-page applications with client-side routing (like Google Chat or GitHub repositories).
@@ -83,7 +83,9 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
 - **Context-Aware Editing**: The editor is smart about where it gets its text from:
 
   - **Text Fields**: If your cursor is in a `<textarea>`, `<input>`, or a `contenteditable` element, HED automatically loads its content into the buffer. The `w` command writes your changes directly back to the element.
+  - **Notes**: If focused on a note, HED edits that note.
   - **Clipboard**: If you are not focused on an editable field, the editor loads its buffer from your system clipboard. The `w` command overwrites the clipboard with your edits.
+  - **Override**: Use `ce` to force clipboard editing even when a field is focused.
 
 - **Keyboard-Centric Workflow**: Designed from the ground up to be operated entirely by the keyboard.
 
@@ -100,8 +102,9 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
 1.  Navigate to any web page.
 2.  Focus a text area or `contenteditable` block you want to edit, or just click anywhere to use your clipboard.
 3.  Press **`Ctrl+H`** to launch the HED palette.
-4.  Enter standard `ed` commands, a highlight command (`/regex/H`), or a selection command (`/regex/S`).
-5.  When finished, type `w` and press `Enter` to save your changes and close the editor.
+4.  Type **`?`** to see all available HED features and commands.
+5.  Enter standard `ed` commands, a highlight command (`/regex/H`), or a selection command (`/regex/S`).
+6.  When finished, type `w` and press `Enter` to save your changes and close the editor.
 
 ## Configuration
 

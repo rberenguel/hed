@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "hed",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Highlighting (and Javascript-ed) Ed.",
   "permissions": [
     "activeTab",
@@ -41,6 +41,7 @@
         "src/content/highlighter.js",
         "src/content/highlightPatterns.js",
         "src/content/noteKeyUtils.js",
+        "src/content/help.js",
         "src/content/palette.js",
         "src/content/selector.js",
         "src/content/notes.js"
