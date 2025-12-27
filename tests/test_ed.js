@@ -206,4 +206,125 @@ describe("Ed Class Core Functionality", function () {
       expect(result.error).to.equal("?");
     });
   });
+
+  describe("Shell Commands", function () {
+    beforeEach(function () {
+      ed = new Ed(["apple", "banana", "apple", "cherry", "BANANA"], {
+        verboseErrors: true,
+      });
+    });
+
+    it("!? should show help", function () {
+      const result = ed.process("!?");
+      expect(result.output).to.include("Shell Commands");
+      expect(result.output).to.include("sort");
+      expect(result.output).to.include("uniq");
+    });
+
+    it("!sort should sort lines alphabetically", function () {
+      ed.process(",!sort");
+      expect(ed.buffer).to.deep.equal([
+        "BANANA",
+        "apple",
+        "apple",
+        "banana",
+        "cherry",
+      ]);
+    });
+
+    it("!sort should work on a range", function () {
+      ed.process("1,3!sort");
+      expect(ed.buffer).to.deep.equal([
+        "apple",
+        "apple",
+        "banana",
+        "cherry",
+        "BANANA",
+      ]);
+    });
+
+    it("!uniq should remove duplicate lines", function () {
+      ed.process(",!uniq");
+      expect(ed.buffer).to.deep.equal(["apple", "banana", "cherry", "BANANA"]);
+    });
+
+    it("!reverse should reverse line order", function () {
+      ed.process(",!reverse");
+      expect(ed.buffer).to.deep.equal([
+        "BANANA",
+        "cherry",
+        "apple",
+        "banana",
+        "apple",
+      ]);
+    });
+
+    it("!shuffle should shuffle lines (length unchanged)", function () {
+      const originalLength = ed.buffer.length;
+      ed.process(",!shuffle");
+      expect(ed.buffer.length).to.equal(originalLength);
+      // Check all original elements are still present
+      expect(ed.buffer).to.include.members([
+        "apple",
+        "banana",
+        "cherry",
+        "BANANA",
+      ]);
+    });
+
+    it("!trim should remove whitespace", function () {
+      ed = new Ed(["  hello  ", "world\t", "\n\ntest\n"], {
+        verboseErrors: true,
+      });
+      ed.process(",!trim");
+      expect(ed.buffer).to.deep.equal(["hello", "world", "test"]);
+    });
+
+    it("!upper should convert to uppercase", function () {
+      ed.process(",!upper");
+      expect(ed.buffer).to.deep.equal([
+        "APPLE",
+        "BANANA",
+        "APPLE",
+        "CHERRY",
+        "BANANA",
+      ]);
+    });
+
+    it("!lower should convert to lowercase", function () {
+      ed.process(",!lower");
+      expect(ed.buffer).to.deep.equal([
+        "apple",
+        "banana",
+        "apple",
+        "cherry",
+        "banana",
+      ]);
+    });
+
+    it("!title should convert to title case", function () {
+      ed = new Ed(["hello world", "GOOD MORNING", "tHiS iS tEsT"], {
+        verboseErrors: true,
+      });
+      ed.process(",!title");
+      expect(ed.buffer).to.deep.equal([
+        "Hello World",
+        "Good Morning",
+        "This Is Test",
+      ]);
+    });
+
+    it("!invalid should return an error", function () {
+      const result = ed.process("!invalid");
+      expect(result.error).to.exist;
+      expect(result.error).to.include("unknown command");
+    });
+
+    it("shell commands should work on current line if no range", function () {
+      ed.currentLine = 1; // On "banana" (0-indexed)
+      ed.process("!upper");
+      expect(ed.buffer[1]).to.equal("BANANA");
+      expect(ed.buffer[0]).to.equal("apple"); // Other lines unchanged
+    });
+  });
 });

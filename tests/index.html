@@ -9,18 +9,14 @@
     <div id="mocha"></div>
     <script src="mocha.js"></script>
     <script src="chai.js"></script>
-    <script>
-      mocha.setup("bdd");
-    </script>
+
+    <!-- Test runner setup -->
+    <script src="test_runner.js"></script>
 
     <!-- Source file for the class being tested -->
     <script src="../src/content/ed.js"></script>
 
     <!-- Test script -->
     <script src="test_ed.js"></script>
-
-    <script>
-      mocha.run();
-    </script>
   </body>
 </html>

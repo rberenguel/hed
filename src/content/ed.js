@@ -124,22 +124,96 @@ class Ed {
     }
 
     const lines = this.buffer.slice(range.start - 1, range.end);
-    const output = `Would execute '${shellCommand}' on lines ${range.start}-${range.end}:\n${lines.join("\n")}`;
+    const cmd = shellCommand.trim();
 
-    if (shellCommand === "sort") {
-      const sortedLines = [...lines].sort();
-      this.buffer.splice(
-        range.start - 1,
-        range.end - range.start + 1,
-        ...sortedLines,
-      );
-      this.currentLine = range.start - 1;
-      return { output: `Lines sorted.` };
+    // Help command
+    if (cmd === "?") {
+      const help = `Shell Commands (use with !):
+
+Text Manipulation:
+  sort          Sort lines alphabetically
+  uniq          Remove duplicate lines
+  reverse       Reverse line order
+  shuffle       Randomly shuffle lines
+  trim          Trim leading/trailing whitespace
+
+Case Conversion:
+  upper         Convert to UPPERCASE
+  lower         Convert to lowercase
+  title         Convert To Title Case
+
+Use: [range]!command
+Examples: 1,5!sort  ,!uniq  !upper`;
+      return { output: help };
     }
 
-    return {
-      output,
-    };
+    let processedLines;
+
+    switch (cmd) {
+      case "sort":
+        processedLines = [...lines].sort();
+        break;
+
+      case "uniq":
+        processedLines = [];
+        const seen = new Set();
+        for (const line of lines) {
+          if (!seen.has(line)) {
+            seen.add(line);
+            processedLines.push(line);
+          }
+        }
+        break;
+
+      case "reverse":
+        processedLines = [...lines].reverse();
+        break;
+
+      case "shuffle":
+        processedLines = [...lines];
+        // Fisher-Yates shuffle
+        for (let i = processedLines.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [processedLines[i], processedLines[j]] = [
+            processedLines[j],
+            processedLines[i],
+          ];
+        }
+        break;
+
+      case "trim":
+        processedLines = lines.map((line) => line.trim());
+        break;
+
+      case "upper":
+        processedLines = lines.map((line) => line.toUpperCase());
+        break;
+
+      case "lower":
+        processedLines = lines.map((line) => line.toLowerCase());
+        break;
+
+      case "title":
+        processedLines = lines.map((line) =>
+          line.replace(/\w\S*/g, (word) => {
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+          }),
+        );
+        break;
+
+      default:
+        return this._error(`unknown command: ${cmd}`);
+    }
+
+    // Replace lines in buffer
+    this.buffer.splice(
+      range.start - 1,
+      range.end - range.start + 1,
+      ...processedLines,
+    );
+    this.currentLine = range.end;
+
+    return { output: `${cmd}: ${processedLines.length} lines processed.` };
   }
 
   _parseCommand(commandStr) {

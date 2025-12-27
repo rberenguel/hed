@@ -15,7 +15,9 @@
     </section>
     <section>
       <h4>Shell Commands</h4>
-      <div>!sort - Sort lines</div>
+      <div>!sort/uniq/reverse/shuffle</div>
+      <div>!trim - Trim whitespace</div>
+      <div>!upper/lower/title - Case</div>
       <div>!? - Command help</div>
     </section>
     <section>

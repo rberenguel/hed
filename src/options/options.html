@@ -330,6 +330,21 @@
       .modal-btn-delete:hover {
         background: var(--orange);
       }
+      .test-link {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        font-size: 10px;
+        color: var(--base01);
+        text-decoration: none;
+        font-family: monospace;
+        opacity: 0.3;
+        transition: opacity 0.2s;
+      }
+      .test-link:hover {
+        opacity: 1;
+        color: var(--blue);
+      }
     </style>
   </head>
   <body>
@@ -415,6 +430,8 @@
         </div>
       </div>
     </div>
+
+    <a href="../../tests/index.html" class="test-link" title="Run Tests">T</a>
 
     <script src="options.js"></script>
   </body>

@@ -13,7 +13,7 @@ This document tracks planned features and enhancements for HED.
 ## Phase 1: Shell Commands Enhancement
 
 ### 1.1 Command Help System
-- [ ] Implement `!?` to show shell command help
+- [x] Implement `!?` to show shell command help (DONE - v0.9.0)
   - Show all available shell commands
   - Brief description of each
   - Example usage
@@ -21,15 +21,15 @@ This document tracks planned features and enhancements for HED.
 
 ### 1.2 Text Manipulation Commands
 - [x] `!sort` - Sort lines alphabetically (DONE - v0.7.0)
-- [ ] `!uniq` - Remove duplicate lines
-- [ ] `!reverse` - Reverse line order
-- [ ] `!shuffle` - Randomly shuffle lines
-- [ ] `!trim` - Trim leading/trailing whitespace from all lines
+- [x] `!uniq` - Remove duplicate lines (DONE - v0.9.0)
+- [x] `!reverse` - Reverse line order (DONE - v0.9.0)
+- [x] `!shuffle` - Randomly shuffle lines (DONE - v0.9.0)
+- [x] `!trim` - Trim leading/trailing whitespace from all lines (DONE - v0.9.0)
 
 ### 1.3 Case Conversion Commands
-- [ ] `!upper` - Convert all text to uppercase
-- [ ] `!lower` - Convert all text to lowercase
-- [ ] `!title` - Convert to Title Case
+- [x] `!upper` - Convert all text to uppercase (DONE - v0.9.0)
+- [x] `!lower` - Convert all text to lowercase (DONE - v0.9.0)
+- [x] `!title` - Convert to Title Case (DONE - v0.9.0)
 
 ### 1.4 Encoding/Decoding Commands
 - [ ] `!base64` - Encode to base64
@@ -153,11 +153,11 @@ This document tracks planned features and enhancements for HED.
 
 ## Implementation Priority Order
 
-1. **Immediate (v0.9.0):**
-   - [ ] `!?` command help
-   - [ ] `!uniq`, `!reverse`, `!shuffle`, `!trim`
-   - [ ] `!upper`, `!lower`, `!title`
-   - [ ] Update help.js as commands are added
+1. **Immediate (v0.9.0):** ✓ COMPLETED
+   - [x] `!?` command help
+   - [x] `!uniq`, `!reverse`, `!shuffle`, `!trim`
+   - [x] `!upper`, `!lower`, `!title`
+   - [x] Update help.js as commands are added
 
 2. **Next (v0.10.0):**
    - [ ] `!links`, `!emails` page extraction
