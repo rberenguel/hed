@@ -14,7 +14,7 @@
       <div>/regex/S - Extract to CSV</div>
     </section>
     <section>
-      <h4>Shell Commands</h4>
+      <h4>Bang Commands</h4>
       <div>!sort/uniq/reverse/shuffle</div>
       <div>!trim - Trim whitespace</div>
       <div>!upper/lower/title - Case</div>

@@ -3,6 +3,14 @@
 
 const { expect } = chai;
 
+// Helper function to strip HTML from visualized whitespace output
+function stripHTML(html) {
+  if (typeof html !== "string") return html;
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent;
+}
+
 describe("Ed Class Core Functionality", function () {
   let ed;
 
@@ -104,47 +112,47 @@ describe("Ed Class Core Functionality", function () {
 
     it("a number should go to a line and print it", function () {
       const result = ed.process("3");
-      expect(result.output).to.equal("find me");
+      expect(stripHTML(result.output)).to.equal("find me");
       expect(ed.currentLine).to.equal(2);
     });
 
     it("'p' should print the current line by default", function () {
       ed.currentLine = 3;
       const result = ed.process("p");
-      expect(result.output).to.equal("line 4");
+      expect(stripHTML(result.output)).to.equal("line 4");
     });
 
     it("a range should print all lines in that range", function () {
       const result = ed.process("2,4p");
-      expect(result.output).to.equal("line 2\nfind me\nline 4");
+      expect(stripHTML(result.output)).to.equal("line 2\nfind me\nline 4");
       expect(ed.currentLine).to.equal(3);
     });
 
     it("'$' should refer to the last line", function () {
       const result = ed.process("$p");
-      expect(result.output).to.equal("find me too");
+      expect(stripHTML(result.output)).to.equal("find me too");
       expect(ed.currentLine).to.equal(4);
     });
 
     it("',' and '%' should refer to all lines", function () {
       const allLines = ed.buffer.join("\n");
       let result = ed.process(",p");
-      expect(result.output).to.equal(allLines);
+      expect(stripHTML(result.output)).to.equal(allLines);
       result = ed.process("%p");
-      expect(result.output).to.equal(allLines);
+      expect(stripHTML(result.output)).to.equal(allLines);
     });
 
     it("a regex should find the next matching line", function () {
       ed.currentLine = 0;
       let result = ed.process("/find/");
-      expect(result.output).to.equal("find me");
+      expect(stripHTML(result.output)).to.equal("find me");
       expect(ed.currentLine).to.equal(2);
     });
 
     it("a regex range should print between two matches", function () {
       ed.currentLine = 0;
       const result = ed.process("/find/,/too/p");
-      expect(result.output).to.equal("find me\nline 4\nfind me too");
+      expect(stripHTML(result.output)).to.equal("find me\nline 4\nfind me too");
       expect(ed.currentLine).to.equal(4);
     });
   });
@@ -157,20 +165,20 @@ describe("Ed Class Core Functionality", function () {
     it("should substitute the first occurrence on the current line", function () {
       ed.currentLine = 0;
       const result = ed.process("s/world/galaxy/");
-      expect(result.output).to.equal("hello galaxy");
+      expect(stripHTML(result.output)).to.equal("hello galaxy");
       expect(ed.buffer[0]).to.equal("hello galaxy");
     });
 
     it("should substitute globally on the current line with /g", function () {
       ed.currentLine = 2;
       const result = ed.process("s/world/galaxy/g");
-      expect(result.output).to.equal("galaxy galaxy");
+      expect(stripHTML(result.output)).to.equal("galaxy galaxy");
       expect(ed.buffer[2]).to.equal("galaxy galaxy");
     });
 
     it("should substitute over a range of lines", function () {
       const result = ed.process("1,2s/world/galaxy/");
-      expect(result.output).to.equal("another galaxy"); // only prints last modified
+      expect(stripHTML(result.output)).to.equal("another galaxy"); // only prints last modified
       expect(ed.buffer).to.deep.equal([
         "hello galaxy",
         "another galaxy",
@@ -207,7 +215,7 @@ describe("Ed Class Core Functionality", function () {
     });
   });
 
-  describe("Shell Commands", function () {
+  describe("Bang Commands", function () {
     beforeEach(function () {
       ed = new Ed(["apple", "banana", "apple", "cherry", "BANANA"], {
         verboseErrors: true,
@@ -216,7 +224,7 @@ describe("Ed Class Core Functionality", function () {
 
     it("!? should show help", function () {
       const result = ed.process("!?");
-      expect(result.output).to.include("Shell Commands");
+      expect(result.output).to.include("Bang Commands");
       expect(result.output).to.include("sort");
       expect(result.output).to.include("uniq");
     });
@@ -325,6 +333,55 @@ describe("Ed Class Core Functionality", function () {
       ed.process("!upper");
       expect(ed.buffer[1]).to.equal("BANANA");
       expect(ed.buffer[0]).to.equal("apple"); // Other lines unchanged
+    });
+  });
+
+  describe("Whitespace Visualization", function () {
+    beforeEach(function () {
+      ed = new Ed(["  spaces  ", "tab\there", "normal"], {
+        verboseErrors: true,
+      });
+    });
+
+    it("p command should return HTML with visualized whitespace", function () {
+      const result = ed.process("1p");
+      expect(result.isHTML).to.be.true;
+      expect(result.output).to.include('<span class="ws-vis">');
+      expect(result.output).to.include("spaces");
+    });
+
+    it("n command should return HTML with line numbers and visualized whitespace", function () {
+      const result = ed.process("1,2n");
+      expect(result.isHTML).to.be.true;
+      expect(result.output).to.include('<span class="line-num">1</span>');
+      expect(result.output).to.include('<span class="line-num">2</span>');
+      expect(result.output).to.include('<span class="ws-vis">');
+    });
+
+    it("should escape HTML characters in buffer content", function () {
+      ed = new Ed(["<script>alert('xss')</script>"]);
+      const result = ed.process("p");
+      expect(result.output).to.include("&lt;script&gt;");
+      expect(result.output).to.include("&lt;/script&gt;");
+      expect(result.output).not.to.include("<script>");
+    });
+
+    it("should visualize tabs with tab class", function () {
+      const result = ed.process("2p");
+      expect(result.output).to.include('<span class="ws-vis ws-tab">');
+    });
+
+    it("s command should return HTML with visualized whitespace", function () {
+      const result = ed.process("3s/normal/  spaced  /");
+      expect(result.isHTML).to.be.true;
+      expect(result.output).to.include('<span class="ws-vis">');
+    });
+
+    it("empty command should return HTML with visualized whitespace", function () {
+      ed.currentLine = 2; // Start on line 2 (0-indexed), will advance to line 0 which has spaces
+      const result = ed.process("");
+      expect(result.isHTML).to.be.true;
+      expect(result.output).to.include('<span class="ws-vis">');
     });
   });
 });

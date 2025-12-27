@@ -4,6 +4,33 @@
   let sessionMode = "clipboard-edit"; // Default session mode
   let activeElement = null; // Default active element
 
+  // Command history
+  const HISTORY_KEY = "hed-command-history";
+  let commandHistory = [];
+  let historyPosition = -1;
+  const MAX_HISTORY = 100;
+
+  // Load command history from storage
+  async function loadCommandHistory() {
+    try {
+      const data = await chrome.storage.local.get([HISTORY_KEY]);
+      if (data[HISTORY_KEY] && Array.isArray(data[HISTORY_KEY])) {
+        commandHistory = data[HISTORY_KEY];
+      }
+    } catch (e) {
+      console.error("HED: Error loading command history", e);
+    }
+  }
+
+  // Save command history to storage
+  async function saveCommandHistory() {
+    try {
+      await chrome.storage.local.set({ [HISTORY_KEY]: commandHistory });
+    } catch (e) {
+      console.error("HED: Error saving command history", e);
+    }
+  }
+
   /**
    * Reads text from a contenteditable element, preserving line breaks.
    */
@@ -226,6 +253,9 @@
       return;
     }
 
+    // Load command history from storage
+    await loadCommandHistory();
+
     const focusedElement = document.activeElement;
     let initialBuffer = [];
     sessionMode = "clipboard-edit";
@@ -275,10 +305,34 @@
     container.id = "rh-palette-container";
     const output = document.createElement("pre");
     output.id = "rh-palette-output";
+
+    // Input container for ghost text layering
+    const inputContainer = document.createElement("div");
+    inputContainer.style.position = "relative";
+    inputContainer.style.width = "100%";
+
+    // Ghost text for inline completion
+    const ghostText = document.createElement("div");
+    ghostText.id = "rh-palette-ghost";
+    ghostText.style.position = "absolute";
+    ghostText.style.left = "10px";
+    ghostText.style.top = "0";
+    ghostText.style.height = "100%";
+    ghostText.style.display = "flex";
+    ghostText.style.alignItems = "center";
+    ghostText.style.pointerEvents = "none";
+    ghostText.style.color = "transparent";
+    ghostText.style.fontSize = "20px";
+    ghostText.style.fontFamily = "monospace";
+    ghostText.style.whiteSpace = "pre";
+
     const input = document.createElement("input");
     input.id = "rh-palette-input";
     input.placeholder = edInstance.getPrompt();
     input.autocomplete = "off";
+    input.style.background = "transparent";
+    input.style.position = "relative";
+    input.style.zIndex = "1";
 
     if (sessionMode === "note-edit") {
       container.classList.add("is-editing-note");
@@ -328,9 +382,8 @@
         const toggleMatch = command.trim().match(/^(\d+)\s*H$/i);
         if (toggleMatch) {
           const patternId = parseInt(toggleMatch[1]);
-          const result = await window.hedHighlightPatterns.togglePattern(
-            patternId,
-          );
+          const result =
+            await window.hedHighlightPatterns.togglePattern(patternId);
 
           if (result.error) {
             renderOutput(output, result.error);
@@ -428,14 +481,16 @@
       }
 
       let newOutput = null;
+      let isHTML = false;
 
       if (result.error) {
         newOutput = result.error;
       } else if (result.output) {
         newOutput = result.output;
+        isHTML = result.isHTML || false;
       }
 
-      renderOutput(output, newOutput);
+      renderOutput(output, newOutput, isHTML);
 
       if (result.status === "input") {
         input.placeholder = "";
@@ -473,16 +528,145 @@
         closePalette();
         return;
       }
+
+      // Command history navigation
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (commandHistory.length === 0) return;
+
+        if (historyPosition === -1) {
+          historyPosition = commandHistory.length - 1;
+        } else if (historyPosition > 0) {
+          historyPosition--;
+        }
+        input.value = commandHistory[historyPosition];
+        ghostText.textContent = ""; // Clear ghost text
+        // Move cursor to end
+        setTimeout(() => {
+          input.selectionStart = input.selectionEnd = input.value.length;
+        }, 0);
+        return;
+      }
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (commandHistory.length === 0 || historyPosition === -1) return;
+
+        if (historyPosition < commandHistory.length - 1) {
+          historyPosition++;
+          input.value = commandHistory[historyPosition];
+        } else {
+          historyPosition = -1;
+          input.value = "";
+        }
+        ghostText.textContent = ""; // Clear ghost text
+        // Move cursor to end
+        setTimeout(() => {
+          input.selectionStart = input.selectionEnd = input.value.length;
+        }, 0);
+        return;
+      }
+
+      // Right Arrow to accept ghost text
+      if (e.key === "ArrowRight") {
+        const currentValue = input.value;
+        const cursorAtEnd =
+          input.selectionStart === currentValue.length &&
+          input.selectionEnd === currentValue.length;
+
+        if (cursorAtEnd && ghostText.textContent) {
+          e.preventDefault();
+          const bangIndex = currentValue.lastIndexOf("!");
+          if (bangIndex !== -1) {
+            const afterBang = currentValue.substring(bangIndex + 1);
+            const matches = Ed.BANG_COMMANDS.filter((cmd) =>
+              cmd.startsWith(afterBang),
+            );
+            if (matches.length > 0) {
+              const beforeBang = currentValue.substring(0, bangIndex + 1);
+              input.value = beforeBang + matches[0];
+              updateGhostText(input.value);
+            }
+          }
+          return;
+        }
+      }
+
+      // Tab completion for bang commands
+      if (e.key === "Tab") {
+        e.preventDefault();
+        const currentValue = input.value;
+
+        // Find the last ! in the input (to handle ranges like ",!so" or "1,5!un")
+        const bangIndex = currentValue.lastIndexOf("!");
+        if (bangIndex !== -1) {
+          const beforeBang = currentValue.substring(0, bangIndex + 1);
+          const afterBang = currentValue.substring(bangIndex + 1);
+
+          const matches = Ed.BANG_COMMANDS.filter((cmd) =>
+            cmd.startsWith(afterBang),
+          );
+
+          if (matches.length === 1) {
+            input.value = beforeBang + matches[0];
+            updateGhostText(input.value);
+          } else if (matches.length > 1) {
+            // Show matches in output briefly
+            renderOutput(output, `Options: ${matches.join(", ")}`);
+            setTimeout(() => renderOutput(output, null), 2000);
+          }
+        }
+        return;
+      }
+
       if (e.key !== "Enter") return;
 
       e.preventDefault();
       const command = input.value;
+
+      // Add to history (skip empty commands and duplicates of last command)
+      if (
+        command.trim() &&
+        command !== commandHistory[commandHistory.length - 1]
+      ) {
+        commandHistory.push(command);
+        if (commandHistory.length > MAX_HISTORY) {
+          commandHistory.shift();
+        }
+        // Save to storage (async, don't wait)
+        saveCommandHistory();
+      }
+      historyPosition = -1; // Reset history position
+
       input.value = "";
       processAndRender(command);
     });
 
+    // Update ghost text for inline completion
+    function updateGhostText(currentValue) {
+      const bangIndex = currentValue.lastIndexOf("!");
+      if (bangIndex !== -1 && !currentValue.includes(" ")) {
+        const afterBang = currentValue.substring(bangIndex + 1);
+        const matches = Ed.BANG_COMMANDS.filter((cmd) =>
+          cmd.startsWith(afterBang),
+        );
+
+        if (matches.length > 0 && afterBang.length > 0) {
+          const completion = matches[0].substring(afterBang.length);
+          // Show current input in transparent, then completion in gray
+          ghostText.innerHTML = `<span>${currentValue}</span><span style="color: #586e75">${completion}</span>`;
+        } else {
+          ghostText.textContent = "";
+        }
+      } else {
+        ghostText.textContent = "";
+      }
+    }
+
     input.addEventListener("input", (e) => {
       const command = e.target.value;
+      updateGhostText(command);
+
       const isSelector = command.endsWith("/S");
       const isHighlighter = command.endsWith("/H");
 
@@ -508,7 +692,9 @@
     });
 
     container.appendChild(output);
-    container.appendChild(input);
+    inputContainer.appendChild(ghostText);
+    inputContainer.appendChild(input);
+    container.appendChild(inputContainer);
     backdrop.appendChild(container);
     document.body.appendChild(backdrop);
     setTimeout(() => input.focus(), 0);

@@ -1,4 +1,17 @@
 class Ed {
+  // Available bang commands (centralized list)
+  static BANG_COMMANDS = [
+    "sort",
+    "uniq",
+    "reverse",
+    "shuffle",
+    "trim",
+    "upper",
+    "lower",
+    "title",
+    "?",
+  ];
+
   constructor(initialBuffer = [], config = {}) {
     this.buffer = [...initialBuffer];
     this.currentLine = this.buffer.length > 0 ? this.buffer.length - 1 : 0;
@@ -35,8 +48,8 @@ class Ed {
     if (commandStr === "") {
       if (this.buffer.length > 0) {
         this.currentLine = (this.currentLine + 1) % this.buffer.length;
-        const output = this._print(this.currentLine + 1, this.currentLine + 1);
-        return output.error ? output : { output };
+        const result = this._print(this.currentLine + 1, this.currentLine + 1);
+        return result.error ? result : result;
       } else {
         return this._error("empty buffer");
       }
@@ -71,23 +84,24 @@ class Ed {
         if (changePreview.error) {
           return changePreview;
         }
-        // For single-line changes, prepopulate the input
+        // For single-line changes, prepopulate the input with plain text
         if (range.start === range.end) {
-          return { status: "input", prepopulate: changePreview };
+          return {
+            status: "input",
+            prepopulate: this.buffer[range.start - 1],
+          };
         }
         // For multi-line changes, show in output area
-        return { status: "input", output: changePreview };
+        return { status: "input", ...changePreview };
       case "d":
         const delOutput = this._deleteLines(range.start, range.end);
         return delOutput.error ? delOutput : { output: "" };
       case "p":
         const printOutput = this._print(range.start, range.end);
-        return printOutput.error ? printOutput : { output: printOutput };
+        return printOutput.error ? printOutput : printOutput;
       case "n":
         const numPrintOutput = this._numberPrint(range.start, range.end);
-        return numPrintOutput.error
-          ? numPrintOutput
-          : { output: numPrintOutput };
+        return numPrintOutput.error ? numPrintOutput : numPrintOutput;
       case "s":
         return this._substituteCommand(command, range);
       case "e":
@@ -128,23 +142,33 @@ class Ed {
 
     // Help command
     if (cmd === "?") {
-      const help = `Shell Commands (use with !):
-
-Text Manipulation:
-  sort          Sort lines alphabetically
-  uniq          Remove duplicate lines
-  reverse       Reverse line order
-  shuffle       Randomly shuffle lines
-  trim          Trim leading/trailing whitespace
-
-Case Conversion:
-  upper         Convert to UPPERCASE
-  lower         Convert to lowercase
-  title         Convert To Title Case
-
-Use: [range]!command
-Examples: 1,5!sort  ,!uniq  !upper`;
-      return { output: help };
+      const help = `<div class="hed-help">
+  <div class="hed-help-header">Bang Commands <span>(use with ! prefix)</span></div>
+  <div class="hed-help-cols">
+    <section>
+      <h4>Text Manipulation</h4>
+      <div>sort - Sort lines</div>
+      <div>uniq - Remove duplicates</div>
+      <div>reverse - Reverse order</div>
+      <div>shuffle - Random shuffle</div>
+      <div>trim - Remove whitespace</div>
+    </section>
+    <section>
+      <h4>Case Conversion</h4>
+      <div>upper - UPPERCASE</div>
+      <div>lower - lowercase</div>
+      <div>title - Title Case</div>
+    </section>
+    <section>
+      <h4>Usage</h4>
+      <div>[range]!command</div>
+      <div>1,5!sort - Sort lines 1-5</div>
+      <div>,!uniq - Dedupe all</div>
+      <div>!upper - Current line</div>
+    </section>
+  </div>
+</div>`;
+      return { output: help, isHTML: true };
     }
 
     let processedLines;
@@ -289,6 +313,18 @@ Examples: 1,5!sort  ,!uniq  !upper`;
     return { error: "?" };
   }
 
+  _visualizeWhitespace(str) {
+    // Escape HTML first
+    const escaped = str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    // Then wrap whitespace in spans
+    return escaped
+      .replace(/ /g, '<span class="ws-vis"> </span>')
+      .replace(/\t/g, '<span class="ws-vis ws-tab">\t</span>');
+  }
+
   _print(start, end) {
     if (this.buffer.length === 0 && (start || end))
       return this._error("empty buffer");
@@ -298,10 +334,10 @@ Examples: 1,5!sort  ,!uniq  !upper`;
 
     let output = [];
     for (let i = start - 1; i < end; i++) {
-      output.push(this.buffer[i]);
+      output.push(this._visualizeWhitespace(this.buffer[i]));
     }
     this.currentLine = end - 1;
-    return output.join("\n");
+    return { output: output.join("\n"), isHTML: true };
   }
 
   _numberPrint(start, end) {
@@ -312,10 +348,12 @@ Examples: 1,5!sort  ,!uniq  !upper`;
 
     let output = [];
     for (let i = start - 1; i < end; i++) {
-      output.push(`${i + 1}\t${this.buffer[i]}`);
+      output.push(
+        `<span class="line-num">${i + 1}</span>  ${this._visualizeWhitespace(this.buffer[i])}`,
+      );
     }
     this.currentLine = end - 1;
-    return output.join("\n");
+    return { output: output.join("\n"), isHTML: true };
   }
 
   _append(text, line) {
@@ -384,7 +422,10 @@ Examples: 1,5!sort  ,!uniq  !upper`;
 
     if (anySuccess) {
       this.currentLine = lastModifiedLine;
-      return { output: this.buffer[lastModifiedLine] };
+      return {
+        output: this._visualizeWhitespace(this.buffer[lastModifiedLine]),
+        isHTML: true,
+      };
     }
 
     return this._error("no match");

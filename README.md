@@ -15,11 +15,12 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
 
 - **Modal `ed` Interface**: Activate a minimalist, `ed`-like command palette with a simple shortcut (`Ctrl+H` by default). Use standard `ed` commands (`p`, `s/foo/bar/g`, `a`, `d`, etc.) to manipulate text.
 
-- **Shell Commands**: Powerful text manipulation with `!` prefix commands:
+- **Bang Commands**: Powerful text manipulation with `!` prefix commands:
+
   - `!sort`, `!uniq`, `!reverse`, `!shuffle` - Reorder and deduplicate lines
   - `!upper`, `!lower`, `!title` - Case conversion
   - `!trim` - Remove leading/trailing whitespace
-  - `!?` - Show all available shell commands
+  - `!?` - Show all available bang commands
   - Works on ranges: `1,5!sort` sorts lines 1-5, `,!uniq` deduplicates all lines
 
 - **Dynamic Page Highlighter**: Use the special command format `` `/your-regex/H` `` to instantly highlight all capture groups for a JavaScript regular expression across the page.
@@ -97,6 +98,8 @@ https://github.com/user-attachments/assets/2eaf9353-3851-4524-8b3f-82c553268a9c
 - **Keyboard-Centric Workflow**: Designed from the ground up to be operated entirely by the keyboard.
 
   - Press `Enter` to execute a command.
+  - Use `Up/Down` arrows to navigate command history (last 100 commands, persists globally).
+  - Press `Tab` to auto-complete bang commands (when typing `!`).
   - The editor remains open for sequential commands until you explicitly write (`w`) or cancel.
   - Press `Escape` at any time to immediately close the palette without saving changes.
 
